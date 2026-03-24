@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../api'
 import storage from '../storage'
 
@@ -10,13 +10,25 @@ const TRAFFIC_LABELS = {
   heavy:    { label: 'Heavy traffic',    color: '#EF4444' },
 }
 
+function getOrigin() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve(`${pos.coords.latitude},${pos.coords.longitude}`),
+      () => resolve(null),
+      { timeout: 5000 }
+    )
+  })
+}
+
 export default function DriveWidget() {
   const [destination, setDestination] = useState(() => storage.get('destination') || '')
   const [data,        setData]        = useState(null)
   const [loading,     setLoading]     = useState(false)
   const [error,       setError]       = useState(false)
+  const originRef = useRef(null) // cache geolocation so we don't re-request every refresh
 
-  // Listen for destination changes from SettingsPanel (same tab via synthetic StorageEvent)
+  // Listen for destination changes from SettingsPanel
   useEffect(() => {
     function onStorage(e) {
       if (e.key === 'destination') {
@@ -34,7 +46,11 @@ export default function DriveWidget() {
     if (!dest) return
     setLoading(true)
     try {
-      const result = await api.getDrive(dest)
+      // Get geolocation origin (cached after first call)
+      if (!originRef.current) {
+        originRef.current = await getOrigin()
+      }
+      const result = await api.getDrive(dest, originRef.current)
       setData(result)
       setError(false)
     } catch {
