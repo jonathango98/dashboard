@@ -14,7 +14,8 @@ export default function TaskModal({ task, onSave, onDelete, onClose }) {
   const [form, setForm] = useState(isNew ? EMPTY : {
     title: task.title,
     description: task.description || '',
-    deadline: task.deadline,
+    // datetime-local needs YYYY-MM-DDTHH:MM; pad date-only values
+    deadline: task.deadline.length === 10 ? task.deadline + 'T00:00' : task.deadline,
     importance: task.importance,
     status: task.status,
   })
@@ -99,7 +100,7 @@ export default function TaskModal({ task, onSave, onDelete, onClose }) {
             <label className="task-field-label">Deadline *</label>
             <input
               className="task-field-input"
-              type="date"
+              type="datetime-local"
               value={form.deadline}
               onChange={e => set('deadline', e.target.value)}
             />

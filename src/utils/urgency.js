@@ -1,4 +1,4 @@
-import { differenceInDays, parseISO } from 'date-fns'
+import { differenceInDays, differenceInHours, parseISO } from 'date-fns'
 
 export function urgencyScore(task) {
   const days = differenceInDays(parseISO(task.deadline), new Date())
@@ -8,4 +8,8 @@ export function urgencyScore(task) {
 
 export function daysLeft(task) {
   return differenceInDays(parseISO(task.deadline), new Date())
+}
+
+export function hoursLeft(task) {
+  return differenceInHours(parseISO(task.deadline), new Date())
 }

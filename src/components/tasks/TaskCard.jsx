@@ -1,5 +1,5 @@
 import { useDraggable } from '@dnd-kit/core'
-import { daysLeft } from '../../utils/urgency'
+import { daysLeft, hoursLeft } from '../../utils/urgency'
 
 export const IMPORTANCE_COLORS = {
   1: '#94a3b8',
@@ -16,9 +16,10 @@ const STATUS_LABELS = {
 }
 
 function urgencyInfo(task) {
+  const h = hoursLeft(task)
+  if (h < 0) return { text: `${Math.abs(Math.ceil(h / 24))}d overdue`, color: '#ef4444' }
+  if (h < 24) return { text: `${h}h left`, color: '#f97316' }
   const d = daysLeft(task)
-  if (d < 0) return { text: `${Math.abs(d)}d overdue`, color: '#ef4444' }
-  if (d === 0) return { text: 'Due today', color: '#f97316' }
   if (d <= 2) return { text: `${d}d left`, color: '#f97316' }
   if (d <= 7) return { text: `${d}d left`, color: '#fbbf24' }
   return { text: `${d}d left`, color: 'var(--text-secondary)' }
