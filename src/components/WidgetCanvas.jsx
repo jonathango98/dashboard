@@ -6,8 +6,8 @@ import 'react-resizable/css/styles.css'
 
 const BREAKPOINTS = { lg: 1280, md: 1024, sm: 768 }
 const COLS_MAP    = { lg: 12,   md: 8,    sm: 4   }
-const ROWS = 8
-const MARGIN = [12, 12]
+const ROWS = 6
+const MARGIN = [16, 16]
 const TOPBAR_HEIGHT = 60
 
 function computeRowHeight(availableHeight) {
@@ -78,41 +78,21 @@ function GridBackground({ rowHeight, width, cols }) {
   )
 }
 
-function PlaceholderWidget({ instance, isEditMode, onRemove }) {
-  const label = WIDGET_LABELS[instance.type] || instance.type
-  return (
-    <div className="widget-card placeholder-widget">
-      {isEditMode && (
-        <button
-          className="widget-remove-btn"
-          onClick={() => onRemove(instance.instanceId)}
-          aria-label="Remove widget"
-        >
-          ✕
-        </button>
-      )}
-      <span className="placeholder-label">{label}</span>
-      <span className="placeholder-size">{instance.w}×{instance.h}</span>
-    </div>
-  )
-}
-
-function WidgetWrapper({ instance, isEditMode, onRemove }) {
+function WidgetWrapper({ instance, isEditMode }) {
   const Component = getWidgetComponent(instance.type)
+  const label = WIDGET_LABELS[instance.type] || instance.type
   if (!Component) {
-    return <PlaceholderWidget instance={instance} isEditMode={isEditMode} onRemove={onRemove} />
+    return (
+      <div className="widget-card placeholder-widget">
+        {isEditMode && <div className="widget-edit-overlay" />}
+        <span className="placeholder-label">{label}</span>
+        <span className="placeholder-size">{instance.w}×{instance.h}</span>
+      </div>
+    )
   }
   return (
     <div className="widget-card">
-      {isEditMode && (
-        <button
-          className="widget-remove-btn"
-          onClick={() => onRemove(instance.instanceId)}
-          aria-label="Remove widget"
-        >
-          ✕
-        </button>
-      )}
+      {isEditMode && <div className="widget-edit-overlay" />}
       <Component instanceId={instance.instanceId} />
     </div>
   )
@@ -185,11 +165,16 @@ export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRem
         {layout.map((instance) => (
           <div key={instance.instanceId}>
             {isEditMode && currentBreakpoint === 'lg' && <div className="widget-drag-handle" />}
-            <WidgetWrapper
-              instance={instance}
-              isEditMode={isEditMode}
-              onRemove={onRemove}
-            />
+            {isEditMode && (
+              <button
+                className="widget-remove-btn react-grid-layout-cancel"
+                onClick={() => onRemove(instance.instanceId)}
+                aria-label="Remove widget"
+              >
+                ✕
+              </button>
+            )}
+            <WidgetWrapper instance={instance} isEditMode={isEditMode} />
           </div>
         ))}
       </Responsive>

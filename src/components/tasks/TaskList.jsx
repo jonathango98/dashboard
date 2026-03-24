@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { urgencyScore, daysLeft, hoursLeft } from '../../utils/urgency'
-import { IMPORTANCE_COLORS } from './TaskCard'
 
 const STATUS_LABELS = {
   todo: 'Todo',
@@ -11,25 +10,35 @@ const STATUS_LABELS = {
 function urgencyInfo(task) {
   const h = hoursLeft(task)
   if (h < 0) return { text: `${Math.abs(Math.ceil(h / 24))}d overdue`, color: '#ef4444' }
-  if (h < 24) return { text: `${h}h left`, color: '#f97316' }
+  if (h < 24) return { text: `${Math.round(h)}h left`, color: '#ef4444' }
   const d = daysLeft(task)
   if (d <= 2) return { text: `${d}d left`, color: '#f97316' }
-  if (d <= 7) return { text: `${d}d left`, color: '#fbbf24' }
+  if (d <= 5) return { text: `${d}d left`, color: '#f59e0b' }
   return { text: `${d}d left`, color: 'var(--text-secondary)' }
 }
 
 const SORT_OPTIONS = [
-  { value: 'urgency', label: 'Urgency' },
-  { value: 'importance', label: 'Importance' },
-  { value: 'deadline', label: 'Deadline' },
+  { value: 'urgency',    label: 'Urgency',    arrow: '↓' },
+  { value: 'importance', label: 'Importance', arrow: '↓' },
+  { value: 'deadline',   label: 'Deadline',   arrow: '↑' },
 ]
 
 function sortTasks(tasks, by) {
   return [...tasks].sort((a, b) => {
     if (by === 'importance') return b.importance - a.importance
     if (by === 'deadline') return new Date(a.deadline) - new Date(b.deadline)
-    return urgencyScore(b) - urgencyScore(a) // default: urgency
+    return urgencyScore(b) - urgencyScore(a)
   })
+}
+
+function ImportancePips({ level }) {
+  return (
+    <div className="task-importance-pips">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} className={`task-pip${i <= level ? ' task-pip--filled' : ''}`} />
+      ))}
+    </div>
+  )
 }
 
 export default function TaskList({ tasks, onOpen }) {
@@ -47,7 +56,7 @@ export default function TaskList({ tasks, onOpen }) {
               className={`task-sort-pill${sortBy === opt.value ? ' active' : ''}`}
               onClick={() => setSortBy(opt.value)}
             >
-              {opt.label}
+              {opt.label}{sortBy === opt.value ? ` ${opt.arrow}` : ''}
             </button>
           ))}
         </div>
@@ -57,19 +66,16 @@ export default function TaskList({ tasks, onOpen }) {
         <div className="task-list-empty">No tasks yet — add one above</div>
       ) : (
         <div className="task-list-rows">
-          {sorted.map(task => {
+          {sorted.map((task, idx) => {
             const urg = urgencyInfo(task)
             return (
               <div
                 key={task.id}
-                className="task-list-row"
-                style={{ '--importance-color': IMPORTANCE_COLORS[task.importance] }}
+                className={`task-list-row${idx % 2 === 1 ? ' task-list-row--alt' : ''}`}
                 onClick={() => onOpen(task)}
               >
-                <span className="task-importance-badge" style={{ background: IMPORTANCE_COLORS[task.importance] }}>
-                  !{task.importance}
-                </span>
                 <span className="task-list-title">{task.title}</span>
+                <ImportancePips level={task.importance} />
                 <span className="task-urgency-label" style={{ color: urg.color }}>{urg.text}</span>
                 <span className={`task-status-pill task-status-pill--${task.status}`}>
                   {STATUS_LABELS[task.status]}

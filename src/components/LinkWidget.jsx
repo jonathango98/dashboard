@@ -16,6 +16,17 @@ function normalizeUrl(raw) {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
+function extractLabel(url) {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '')
+    // Capitalize first letter of first segment
+    const name = hostname.split('.')[0]
+    return name.charAt(0).toUpperCase() + name.slice(1)
+  } catch {
+    return url
+  }
+}
+
 export default function LinkWidget({ instanceId }) {
   const storageKey = `link-${instanceId}`
   const [config, setConfig] = useState(() => storage.get(storageKey) || { url: '', label: '' })
@@ -28,8 +39,7 @@ export default function LinkWidget({ instanceId }) {
       if (config.url) setEditing(false)
       return
     }
-    let label = ''
-    try { label = new URL(url).hostname.replace(/^www\./, '') } catch {}
+    const label = extractLabel(url)
     const next = { url, label }
     setConfig(next)
     storage.set(storageKey, next)
@@ -75,11 +85,11 @@ export default function LinkWidget({ instanceId }) {
           <img
             className="link-widget-favicon"
             src={faviconUrl}
-            alt={config.label}
+            alt=""
             onError={(e) => { e.currentTarget.style.display = 'none' }}
           />
         ) : (
-          <span className="link-widget-empty">🔗</span>
+          <span className="link-widget-empty-icon">🔗</span>
         )}
       </a>
       <button

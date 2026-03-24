@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import storage from '../storage'
 
+const MAX_CHARS = 500
+
 export default function StickyNoteWidget({ instanceId }) {
   const [text, setText] = useState(() => storage.get(`sticky-${instanceId}`) || '')
   const debounceRef = useRef(null)
 
-  // Sync if another tab updates this key
   useEffect(() => {
     function onStorage(e) {
       if (e.key === `sticky-${instanceId}`) {
@@ -18,6 +19,7 @@ export default function StickyNoteWidget({ instanceId }) {
 
   function handleChange(e) {
     const val = e.target.value
+    if (val.length > MAX_CHARS) return
     setText(val)
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
@@ -27,6 +29,12 @@ export default function StickyNoteWidget({ instanceId }) {
 
   return (
     <div className="sticky-widget">
+      <div className="sticky-header">
+        <span className="sticky-header-icon">📝</span>
+        <span className="sticky-header-label">Notes</span>
+        <span className="sticky-char-count">{text.length}/{MAX_CHARS}</span>
+      </div>
+      <div className="sticky-divider" />
       <textarea
         className="sticky-textarea"
         value={text}
@@ -34,7 +42,6 @@ export default function StickyNoteWidget({ instanceId }) {
         placeholder="Jot something down…"
         spellCheck={false}
       />
-      <span className="sticky-char-count">{text.length}</span>
     </div>
   )
 }
