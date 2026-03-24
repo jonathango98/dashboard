@@ -32,6 +32,7 @@ import GreetingWidget    from './components/GreetingWidget'
 import ClockWidget       from './components/ClockWidget'
 import TimerWidget       from './components/TimerWidget'
 import WeatherWidget     from './components/WeatherWidget'
+import DriveWidget       from './components/DriveWidget'
 import BibleVerseWidget  from './components/BibleVerseWidget'
 import StickyNoteWidget  from './components/StickyNoteWidget'
 import TaskBoardWidget   from './components/tasks/TaskBoardWidget'
@@ -42,6 +43,7 @@ const registry = {
   clock:    ClockWidget,
   timer:    TimerWidget,
   weather:  WeatherWidget,
+  drive:    DriveWidget,
   bible:    BibleVerseWidget,
   sticky:   StickyNoteWidget,
   tasks:    TaskBoardWidget,

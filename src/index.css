@@ -781,6 +781,96 @@ body::before {
   color: #e05;
 }
 
+/* ── Drive widget ── */
+.drive-widget {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 20px;
+  width: 100%;
+}
+
+.drive-loading,
+.drive-empty {
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.drive-loading-icon,
+.drive-empty-icon {
+  font-size: 24px;
+}
+
+.drive-loading-text,
+.drive-empty-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.drive-empty-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.drive-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.drive-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.drive-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.drive-eta {
+  font-family: 'DM Mono', monospace;
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.drive-eta-unit {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.drive-distance {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.drive-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drive-traffic {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.drive-maps-link {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+.drive-maps-link:hover { opacity: 1; }
+
 /* ── Bible verse widget ── */
 .bible-widget {
   display: flex;

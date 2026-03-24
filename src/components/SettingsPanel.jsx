@@ -18,6 +18,10 @@ export default function SettingsPanel({ onClose }) {
 
   function handleDestinationChange(e) {
     storage.set('destination', e.target.value)
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'destination',
+      newValue: JSON.stringify(e.target.value),
+    }))
   }
 
   function handleAccentChange(key) {
