@@ -11,7 +11,7 @@ export const WIDGET_SIZES = {
   timer:     { w: 2, h: 2 },
   bible:     { w: 4, h: 2 },
   sticky:    { w: 2, h: 2 },
-  tasks:     { w: 12, h: 2 },
+  tasks:     { w: 8, h: 2 },
   link:      { w: 1, h: 1 },
 }
 
