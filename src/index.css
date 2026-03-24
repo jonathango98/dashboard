@@ -160,6 +160,16 @@ body::before {
 }
 
 /* ── Widget card ── */
+/* Suppress react-grid-layout's size animation on initial render */
+.react-grid-item {
+  transition-property: left, top, transform !important;
+}
+
+@keyframes widgetFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .widget-card {
   position: relative;
   height: 100%;
@@ -170,6 +180,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: widgetFadeIn 0.25s ease both;
 }
 
 .widget-drag-handle {
