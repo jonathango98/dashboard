@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import WidgetCanvas from './components/WidgetCanvas'
 import WidgetTray from './components/WidgetTray'
 import SettingsPanel from './components/SettingsPanel'
-import UrlBar from './components/UrlBar'
 import { useLayout } from './hooks/useLayout'
 import storage from './storage'
 import { applyTheme, applyAccent } from './utils/theme'
@@ -52,8 +51,7 @@ export default function App() {
   return (
     <div className="app">
       <div className="topbar">
-        {!isEditMode && <UrlBar />}
-        <div className="topbar-right">
+<div className="topbar-right">
           {!isEditMode ? (
             <>
               <button className="btn-ghost" onClick={() => setIsEditMode(true)}>

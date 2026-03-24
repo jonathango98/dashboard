@@ -90,38 +90,6 @@ body::before {
   pointer-events: none;
 }
 
-/* ── URL Bar ── */
-.urlbar-wrapper {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 480px;
-  pointer-events: all;
-}
-
-.urlbar-input {
-  width: 100%;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 8px 18px;
-  font-family: inherit;
-  font-size: 14px;
-  outline: none;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.urlbar-input::placeholder {
-  color: var(--text-secondary);
-}
-
-.urlbar-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow), 0 2px 12px rgba(0, 0, 0, 0.06);
-}
-
 .topbar-right {
   position: absolute;
   right: 20px;
