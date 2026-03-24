@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import storage from '../storage'
 
 const CACHE_KEY = 'bible-verse-cache'
@@ -15,10 +15,41 @@ function isSameDay(ts) {
   )
 }
 
+function fitFontSize(container, textEl, min = 10, max = 40) {
+  let lo = min, hi = max
+  textEl.style.fontSize = hi + 'px'
+  while (lo < hi - 1) {
+    const mid = Math.floor((lo + hi) / 2)
+    textEl.style.fontSize = mid + 'px'
+    if (textEl.scrollHeight <= container.clientHeight && textEl.scrollWidth <= container.clientWidth) {
+      lo = mid
+    } else {
+      hi = mid
+    }
+  }
+  textEl.style.fontSize = lo + 'px'
+}
+
 export default function BibleVerseWidget() {
   const [verse, setVerse] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const containerRef = useRef(null)
+  const textRef = useRef(null)
+
+  const refit = useCallback(() => {
+    if (containerRef.current && textRef.current) {
+      fitFontSize(containerRef.current, textRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!verse) return
+    refit()
+    const ro = new ResizeObserver(refit)
+    if (containerRef.current) ro.observe(containerRef.current)
+    return () => ro.disconnect()
+  }, [verse, refit])
 
   useEffect(() => {
     const cached = storage.get(CACHE_KEY)
@@ -34,7 +65,6 @@ export default function BibleVerseWidget() {
         return r.json()
       })
       .then((json) => {
-        // ourmanna response shape: { verse: { details: { text, reference, version } } }
         const details = json?.verse?.details
         if (!details) throw new Error('Unexpected shape')
         const verse = {
@@ -66,8 +96,8 @@ export default function BibleVerseWidget() {
   }
 
   return (
-    <div className="bible-widget">
-      <p className="bible-text">"{verse.text}"</p>
+    <div className="bible-widget" ref={containerRef}>
+      <p className="bible-text" ref={textRef}>"{verse.text}"</p>
       <div className="bible-meta">
         <span className="bible-reference">{verse.reference}</span>
         <span className="bible-version">{verse.version}</span>

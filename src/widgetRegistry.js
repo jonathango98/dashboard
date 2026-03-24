@@ -4,12 +4,12 @@
 // Grid: 12 cols × 5 rows
 // Row budget: 1 (info row) + 2 (content row) + 2 (tasks) = 5
 export const WIDGET_SIZES = {
-  greeting:  { w: 2, h: 1 },
+  greeting:  { w: 4, h: 1 },
   clock:     { w: 2, h: 1 },
   weather:   { w: 2, h: 1 },
   drive:     { w: 2, h: 1 },
   timer:     { w: 2, h: 2 },
-  bible:     { w: 4, h: 1 },
+  bible:     { w: 4, h: 2 },
   sticky:    { w: 2, h: 2 },
   tasks:     { w: 12, h: 2 },
 }
