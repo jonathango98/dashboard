@@ -26,14 +26,20 @@ export const WIDGET_LABELS = {
 }
 
 // Registry maps widget type → React component
-import GreetingWidget  from './components/GreetingWidget'
-import ClockWidget     from './components/ClockWidget'
-import TimerWidget     from './components/TimerWidget'
+import GreetingWidget    from './components/GreetingWidget'
+import ClockWidget       from './components/ClockWidget'
+import TimerWidget       from './components/TimerWidget'
+import WeatherWidget     from './components/WeatherWidget'
+import BibleVerseWidget  from './components/BibleVerseWidget'
+import StickyNoteWidget  from './components/StickyNoteWidget'
 
 const registry = {
   greeting: GreetingWidget,
   clock:    ClockWidget,
   timer:    TimerWidget,
+  weather:  WeatherWidget,
+  bible:    BibleVerseWidget,
+  sticky:   StickyNoteWidget,
 }
 
 export function registerWidget(type, component) {
