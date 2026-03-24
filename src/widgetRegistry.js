@@ -8,8 +8,8 @@
 export const WIDGET_SIZES = {
   greeting:  { w: 3, h: 1 },
   clock:     { w: 2, h: 1 },
-  weather:   { w: 3, h: 1 },
-  drive:     { w: 3, h: 1 },
+  weather:   { w: 2, h: 1 },
+  drive:     { w: 2, h: 1 },
   timer:     { w: 3, h: 2 },
   bible:     { w: 4, h: 2 },
   sticky:    { w: 2, h: 3 },
