@@ -5,7 +5,7 @@ import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
 const COLS = 12
-const ROWS = 5
+const ROWS = 8
 const MARGIN = [12, 12]
 const TOPBAR_HEIGHT = 60
 
