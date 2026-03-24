@@ -140,6 +140,7 @@ export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRem
     h: item.h,
     isResizable: false,
     maxY: ROWS - item.h,
+    static: !isEditMode,
   }))
 
   const layouts = {
@@ -149,9 +150,11 @@ export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRem
   }
 
   function handleLayoutChange(currentLayout) {
-    // Only propagate changes at the desktop (lg) breakpoint so stored layout
-    // stays in 12-column coordinates. Tablet views are derived read-only.
-    if (currentBreakpoint === 'lg') onLayoutChange(currentLayout)
+    // Only propagate changes when the user is actively editing at the desktop
+    // breakpoint. Without the isEditMode guard, react-grid-layout fires this
+    // on every initial render / container-width measurement, scrambling the
+    // saved layout every time a new tab opens.
+    if (isEditMode && currentBreakpoint === 'lg') onLayoutChange(currentLayout)
   }
 
   const activeCols = COLS_MAP[currentBreakpoint] || 12
