@@ -623,15 +623,15 @@ body::before {
   font-weight: 600;
 }
 
-/* Centered body: ring and info stacked */
+/* Horizontal body: ring left, info right */
 .timer-body {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   flex: 1;
   padding: 8px 16px 16px;
-  gap: 12px;
+  gap: 16px;
   min-height: 0;
 }
 
@@ -679,12 +679,12 @@ body::before {
   text-align: center;
 }
 
-/* Info column */
+/* Right info column */
 .timer-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 6px;
+  flex: 0;
   min-width: 0;
 }
 
