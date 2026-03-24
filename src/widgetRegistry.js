@@ -12,6 +12,7 @@ export const WIDGET_SIZES = {
   bible:     { w: 4, h: 2 },
   sticky:    { w: 2, h: 2 },
   tasks:     { w: 12, h: 2 },
+  link:      { w: 1, h: 1 },
 }
 
 export const WIDGET_LABELS = {
@@ -23,6 +24,7 @@ export const WIDGET_LABELS = {
   bible:    'Bible Verse',
   sticky:   'Sticky Note',
   tasks:    'Task Board',
+  link:     'Link Button',
 }
 
 // Registry maps widget type → React component
@@ -33,6 +35,7 @@ import WeatherWidget     from './components/WeatherWidget'
 import BibleVerseWidget  from './components/BibleVerseWidget'
 import StickyNoteWidget  from './components/StickyNoteWidget'
 import TaskBoardWidget   from './components/tasks/TaskBoardWidget'
+import LinkWidget        from './components/LinkWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -42,6 +45,7 @@ const registry = {
   bible:    BibleVerseWidget,
   sticky:   StickyNoteWidget,
   tasks:    TaskBoardWidget,
+  link:     LinkWidget,
 }
 
 export function registerWidget(type, component) {
