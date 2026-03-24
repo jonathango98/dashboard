@@ -143,6 +143,7 @@ export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRem
         preventCollision={true}
         onLayoutChange={onLayoutChange}
         draggableHandle=".widget-drag-handle"
+        draggableCancel=".react-grid-layout-cancel"
         style={{ position: 'relative', zIndex: 1 }}
       >
         {layout.map((instance) => (

@@ -5,8 +5,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core'
-import { useDroppable } from '@dnd-kit/core'
 import { useTasks } from '../../hooks/useTasks'
 import { urgencyScore } from '../../utils/urgency'
 import TaskCard from './TaskCard'
@@ -105,7 +105,7 @@ export default function TaskBoardWidget() {
       </div>
 
       {/* Body */}
-      <div className="task-board-body">
+      <div className="task-board-body react-grid-layout-cancel">
         {view === 'board' ? (
           <DndContext
             sensors={sensors}

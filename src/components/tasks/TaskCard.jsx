@@ -28,6 +28,7 @@ function urgencyInfo(task) {
 export default function TaskCard({ task, onClick, overlay = false }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
+    disabled: overlay,
   })
 
   const style = transform
@@ -39,12 +40,12 @@ export default function TaskCard({ task, onClick, overlay = false }) {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={overlay ? undefined : setNodeRef}
       className={`task-card${isDragging ? ' task-card--dragging' : ''}${overlay ? ' task-card--overlay' : ''}`}
-      style={{ ...style, '--importance-color': borderColor }}
+      style={{ ...(overlay ? undefined : style), '--importance-color': borderColor }}
       onClick={!isDragging ? onClick : undefined}
-      {...listeners}
-      {...attributes}
+      {...(overlay ? {} : listeners)}
+      {...(overlay ? {} : attributes)}
     >
       <div className="task-card-header">
         <span className="task-importance-badge" style={{ background: borderColor }}>
