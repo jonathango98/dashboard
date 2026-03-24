@@ -32,6 +32,7 @@ import TimerWidget       from './components/TimerWidget'
 import WeatherWidget     from './components/WeatherWidget'
 import BibleVerseWidget  from './components/BibleVerseWidget'
 import StickyNoteWidget  from './components/StickyNoteWidget'
+import TaskBoardWidget   from './components/tasks/TaskBoardWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -40,6 +41,7 @@ const registry = {
   weather:  WeatherWidget,
   bible:    BibleVerseWidget,
   sticky:   StickyNoteWidget,
+  tasks:    TaskBoardWidget,
 }
 
 export function registerWidget(type, component) {
