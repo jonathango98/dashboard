@@ -736,16 +736,49 @@ body::before {
   align-items: center;
 }
 
-.weather-city {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
 .weather-hl {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+.weather-city {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: inherit;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.weather-city:hover { opacity: 1; }
+
+.weather-location-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.weather-location-input {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--accent);
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+  padding: 0 0 1px;
+  width: 100%;
+}
+
+.weather-location-error {
+  font-size: 10px;
+  color: #e05;
 }
 
 /* ── Bible verse widget ── */

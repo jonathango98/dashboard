@@ -8,6 +8,7 @@ async function request(path) {
 
 export const api = {
   getWeather: (lat, lon) => request(`/api/weather?lat=${lat}&lon=${lon}`),
+  geocode: (q) => request(`/api/geocode?q=${encodeURIComponent(q)}`),
   getDrive: (destination, origin) => {
     const params = new URLSearchParams({ destination })
     if (origin) params.set('origin', origin)

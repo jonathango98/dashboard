@@ -43,6 +43,11 @@ export default function WeatherWidget({ instanceId }) {
   const [error, setError] = useState(null) // 'denied' | 'error'
   const [loading, setLoading] = useState(true)
   const [tempUnit, setTempUnit] = useState(() => storage.get('tempUnit') || 'F')
+  const [locating, setLocating] = useState(false)
+  const [locSearch, setLocSearch] = useState('')
+  const [locError, setLocError] = useState(null)
+
+  const pinnedKey = `weather-pinned-${instanceId}`
 
   const fetchWeather = useCallback(async (lat, lon) => {
     try {
@@ -71,12 +76,18 @@ export default function WeatherWidget({ instanceId }) {
     if (cached && Date.now() - cached.ts < REFRESH_INTERVAL) {
       setData(cached.data)
       setLoading(false)
-      // Still schedule a background refresh
       const id = setTimeout(() => fetchWeather(cached.lat, cached.lon), REFRESH_INTERVAL - (Date.now() - cached.ts))
       return () => clearTimeout(id)
     }
 
-    // Request geolocation
+    // Use pinned location if set, otherwise fall back to geolocation
+    const pinned = storage.get(pinnedKey)
+    if (pinned) {
+      fetchWeather(pinned.lat, pinned.lon)
+      const id = setInterval(() => fetchWeather(pinned.lat, pinned.lon), REFRESH_INTERVAL)
+      return () => clearInterval(id)
+    }
+
     if (!navigator.geolocation) {
       setError('denied')
       setLoading(false)
@@ -93,13 +104,33 @@ export default function WeatherWidget({ instanceId }) {
       }
     )
 
-    // Refresh every 10 min
     const id = setInterval(() => {
       const c = storage.get(`weather-cache-${instanceId}`)
       if (c) fetchWeather(c.lat, c.lon)
     }, REFRESH_INTERVAL)
     return () => clearInterval(id)
-  }, [fetchWeather, instanceId])
+  }, [fetchWeather, instanceId, pinnedKey])
+
+  async function handleLocationSubmit(e) {
+    e.preventDefault()
+    const q = locSearch.trim()
+    if (!q) return
+    try {
+      const results = await api.geocode(q)
+      if (!results.length) {
+        setLocError('Location not found')
+        return
+      }
+      const { lat, lon } = results[0]
+      storage.set(pinnedKey, { lat, lon })
+      setLocating(false)
+      setLocSearch('')
+      setLocError(null)
+      fetchWeather(lat, lon)
+    } catch {
+      setLocError('Search failed')
+    }
+  }
 
   if (loading) {
     return (
@@ -141,7 +172,23 @@ export default function WeatherWidget({ instanceId }) {
         </div>
       </div>
       <div className="weather-bottom">
-        <span className="weather-city">{data.city}</span>
+        {locating ? (
+          <form className="weather-location-form" onSubmit={handleLocationSubmit}>
+            <input
+              className="weather-location-input"
+              autoFocus
+              value={locSearch}
+              onChange={(e) => { setLocSearch(e.target.value); setLocError(null) }}
+              onKeyDown={(e) => e.key === 'Escape' && (setLocating(false), setLocSearch(''), setLocError(null))}
+              placeholder="Search city…"
+            />
+            {locError && <span className="weather-location-error">{locError}</span>}
+          </form>
+        ) : (
+          <button className="weather-city" onClick={() => setLocating(true)} title="Change location">
+            {data.city} ✎
+          </button>
+        )}
         <span className="weather-hl">{formatTemp(data.high, tempUnit)} / {formatTemp(data.low, tempUnit)}</span>
       </div>
     </div>
