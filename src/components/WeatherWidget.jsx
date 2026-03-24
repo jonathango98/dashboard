@@ -26,10 +26,23 @@ function getIcon(condition) {
   return CONDITION_ICONS[condition] || '🌡️'
 }
 
+function convertTemp(f, unit) {
+  if (unit === 'C') return (f - 32) * 5 / 9
+  if (unit === 'K') return (f - 32) * 5 / 9 + 273.15
+  return f
+}
+
+function formatTemp(f, unit) {
+  const val = Math.round(convertTemp(f, unit))
+  if (unit === 'K') return `${val} K`
+  return `${val}°${unit}`
+}
+
 export default function WeatherWidget({ instanceId }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null) // 'denied' | 'error'
   const [loading, setLoading] = useState(true)
+  const [tempUnit, setTempUnit] = useState(() => storage.get('tempUnit') || 'F')
 
   const fetchWeather = useCallback(async (lat, lon) => {
     try {
@@ -43,6 +56,14 @@ export default function WeatherWidget({ instanceId }) {
       setLoading(false)
     }
   }, [instanceId])
+
+  useEffect(() => {
+    function onStorage(e) {
+      if (e.key === 'tempUnit') setTempUnit(storage.get('tempUnit') || 'F')
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   useEffect(() => {
     // Try to use cached data first
@@ -115,13 +136,13 @@ export default function WeatherWidget({ instanceId }) {
       <div className="weather-top">
         <span className="weather-icon">{icon}</span>
         <div className="weather-temps">
-          <span className="weather-temp">{Math.round(data.temp)}°</span>
-          <span className="weather-feels">Feels {Math.round(data.feelsLike)}°</span>
+          <span className="weather-temp">{formatTemp(data.temp, tempUnit)}</span>
+          <span className="weather-feels">Feels {formatTemp(data.feelsLike, tempUnit)}</span>
         </div>
       </div>
       <div className="weather-bottom">
         <span className="weather-city">{data.city}</span>
-        <span className="weather-hl">{Math.round(data.high)}° / {Math.round(data.low)}°</span>
+        <span className="weather-hl">{formatTemp(data.high, tempUnit)} / {formatTemp(data.low, tempUnit)}</span>
       </div>
     </div>
   )

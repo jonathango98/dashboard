@@ -5,6 +5,7 @@ import { applyTheme, applyAccent, ACCENT_OPTIONS } from '../utils/theme'
 export default function SettingsPanel({ onClose }) {
   const [accent,    setAccent]    = useState(() => storage.get('accent')    || 'yellow')
   const [colorMode, setColorMode] = useState(() => storage.get('colorMode') || 'system')
+  const [tempUnit,  setTempUnit]  = useState(() => storage.get('tempUnit')  || 'F')
 
   function handleNameChange(e) {
     storage.set('userName', e.target.value)
@@ -29,6 +30,15 @@ export default function SettingsPanel({ onClose }) {
     setColorMode(mode)
     storage.set('colorMode', mode)
     applyTheme(mode)
+  }
+
+  function handleTempUnitChange(unit) {
+    setTempUnit(unit)
+    storage.set('tempUnit', unit)
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'tempUnit',
+      newValue: JSON.stringify(unit),
+    }))
   }
 
   return (
@@ -94,6 +104,26 @@ export default function SettingsPanel({ onClose }) {
                 onClick={() => handleModeChange(mode)}
               >
                 {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Temperature unit */}
+        <div className="settings-section">
+          <label className="settings-label">Temperature unit</label>
+          <div className="settings-mode-pills">
+            {[
+              { key: 'F', label: '°F Fahrenheit' },
+              { key: 'C', label: '°C Celsius' },
+              { key: 'K', label: 'K Kelvin' },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                className={`mode-pill ${tempUnit === key ? 'active' : ''}`}
+                onClick={() => handleTempUnitChange(key)}
+              >
+                {label}
               </button>
             ))}
           </div>
