@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { GridLayout, useContainerWidth } from 'react-grid-layout'
+import { Responsive, useContainerWidth } from 'react-grid-layout'
 import { getWidgetComponent, WIDGET_LABELS } from '../widgetRegistry'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
-const COLS = 12
+const BREAKPOINTS = { lg: 1280, md: 1024, sm: 768 }
+const COLS_MAP    = { lg: 12,   md: 8,    sm: 4   }
 const ROWS = 8
 const MARGIN = [12, 12]
 const TOPBAR_HEIGHT = 60
@@ -14,9 +15,25 @@ function computeRowHeight(availableHeight) {
   return Math.max(40, Math.floor((availableHeight - MARGIN[1] * (ROWS - 1)) / ROWS))
 }
 
-function GridBackground({ rowHeight, width }) {
+function getInitialBreakpoint() {
+  const w = window.innerWidth
+  if (w >= 1280) return 'lg'
+  if (w >= 1024) return 'md'
+  return 'sm'
+}
+
+function scaleLayout(lgItems, toCols) {
+  const scale = toCols / 12
+  return lgItems.map((item) => {
+    const w = Math.max(1, Math.round(item.w * scale))
+    const x = Math.min(toCols - w, Math.floor(item.x * scale))
+    return { ...item, x, w }
+  })
+}
+
+function GridBackground({ rowHeight, width, cols }) {
   if (!width || !rowHeight) return null
-  const cellW = (width - MARGIN[0] * (COLS - 1)) / COLS
+  const cellW = (width - MARGIN[0] * (cols - 1)) / cols
   const cellH = rowHeight
   const arm = Math.min(12, cellW * 0.15, cellH * 0.15) // corner arm length
   const r = 6 // corner radius inset
@@ -41,7 +58,7 @@ function GridBackground({ rowHeight, width }) {
       height={rowHeight * ROWS + MARGIN[1] * (ROWS - 1)}
     >
       {Array.from({ length: ROWS }, (_, row) =>
-        Array.from({ length: COLS }, (_, col) => {
+        Array.from({ length: cols }, (_, col) => {
           const x = col * (cellW + MARGIN[0])
           const y = row * (cellH + MARGIN[1])
           return (
@@ -104,6 +121,7 @@ function WidgetWrapper({ instance, isEditMode, onRemove }) {
 export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRemove }) {
   const { containerRef, width } = useContainerWidth({ initialWidth: 1280 })
   const [rowHeight, setRowHeight] = useState(100)
+  const [currentBreakpoint, setCurrentBreakpoint] = useState(getInitialBreakpoint)
 
   useEffect(() => {
     function recompute() {
@@ -114,41 +132,56 @@ export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRem
     return () => window.removeEventListener('resize', recompute)
   }, [])
 
-  const rglLayout = layout.map((item) => ({
+  const lgItems = layout.map((item) => ({
     i: item.instanceId,
     x: item.x,
     y: item.y,
     w: item.w,
     h: item.h,
     isResizable: false,
-    isDraggable: isEditMode,
     maxY: ROWS - item.h,
   }))
 
+  const layouts = {
+    lg: lgItems,
+    md: scaleLayout(lgItems, 8),
+    sm: scaleLayout(lgItems, 4),
+  }
+
+  function handleLayoutChange(currentLayout) {
+    // Only propagate changes at the desktop (lg) breakpoint so stored layout
+    // stays in 12-column coordinates. Tablet views are derived read-only.
+    if (currentBreakpoint === 'lg') onLayoutChange(currentLayout)
+  }
+
+  const activeCols = COLS_MAP[currentBreakpoint] || 12
+
   return (
     <div className="widget-canvas" ref={containerRef} style={{ position: 'relative' }}>
-      {isEditMode && <GridBackground rowHeight={rowHeight} width={width} />}
+      {isEditMode && <GridBackground rowHeight={rowHeight} width={width} cols={activeCols} />}
 
-      <GridLayout
-        layout={rglLayout}
-        cols={COLS}
-        rowHeight={rowHeight}
+      <Responsive
         width={width}
+        breakpoints={BREAKPOINTS}
+        cols={COLS_MAP}
+        layouts={layouts}
+        rowHeight={rowHeight}
         margin={MARGIN}
         containerPadding={[0, 0]}
         maxRows={ROWS}
-        isDraggable={isEditMode}
+        isDraggable={isEditMode && currentBreakpoint === 'lg'}
         isResizable={false}
         compactType={null}
         preventCollision={true}
-        onLayoutChange={onLayoutChange}
+        onBreakpointChange={(bp) => setCurrentBreakpoint(bp)}
+        onLayoutChange={handleLayoutChange}
         draggableHandle=".widget-drag-handle"
         draggableCancel=".react-grid-layout-cancel"
         style={{ position: 'relative', zIndex: 1 }}
       >
         {layout.map((instance) => (
           <div key={instance.instanceId}>
-            {isEditMode && <div className="widget-drag-handle" />}
+            {isEditMode && currentBreakpoint === 'lg' && <div className="widget-drag-handle" />}
             <WidgetWrapper
               instance={instance}
               isEditMode={isEditMode}
@@ -156,7 +189,7 @@ export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRem
             />
           </div>
         ))}
-      </GridLayout>
+      </Responsive>
 
       {layout.length === 0 && !isEditMode && (
         <div className="empty-canvas-prompt">
