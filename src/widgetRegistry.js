@@ -9,7 +9,7 @@ export const WIDGET_SIZES = {
   weather:   { w: 2, h: 1 },
   drive:     { w: 2, h: 1 },
   timer:     { w: 2, h: 2 },
-  bible:     { w: 4, h: 2 },
+  bible:     { w: 4, h: 1 },
   sticky:    { w: 2, h: 2 },
   tasks:     { w: 12, h: 2 },
 }

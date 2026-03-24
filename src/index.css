@@ -767,12 +767,12 @@ body::before {
 
 .bible-loading-text,
 .bible-empty-text {
-  font-size: 13px;
+  font-size: 19px;
   color: var(--text-secondary);
 }
 
 .bible-text {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 400;
   color: var(--text-primary);
   line-height: 1.65;
@@ -790,14 +790,14 @@ body::before {
 }
 
 .bible-reference {
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--accent);
 }
 
 .bible-version {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 16px;
   color: var(--text-secondary);
   background: var(--bg-page);
   border: 1px solid var(--border);
@@ -823,7 +823,7 @@ body::before {
   resize: none;
   padding: 16px 16px 28px;
   font-family: 'DM Sans', 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.8;
   color: var(--text-primary);
   /* Lined background */
