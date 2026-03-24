@@ -5,6 +5,12 @@ import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <App onReady={() => {
+      const el = document.getElementById('loading-screen')
+      if (el) {
+        el.style.opacity = '0'
+        setTimeout(() => el.remove(), 300)
+      }
+    }} />
   </StrictMode>,
 )

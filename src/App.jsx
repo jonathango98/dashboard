@@ -6,7 +6,7 @@ import { useLayout } from './hooks/useLayout'
 import storage from './storage'
 import { applyTheme, applyAccent } from './utils/theme'
 
-export default function App() {
+export default function App({ onReady }) {
   const [isEditMode, setIsEditMode] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const { layout, addWidget, removeWidget, onLayoutChange, commitLayout, discardLayout } = useLayout()
@@ -23,6 +23,10 @@ export default function App() {
       if ((storage.get('colorMode') || 'system') === 'system') applyTheme('system')
     }
     mq.addEventListener('change', handler)
+
+    // Dismiss loading screen
+    if (onReady) onReady()
+
     return () => mq.removeEventListener('change', handler)
   }, [])
 
