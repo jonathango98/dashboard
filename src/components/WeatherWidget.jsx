@@ -38,6 +38,13 @@ function formatTemp(f, unit) {
   return `${val}°${unit}`
 }
 
+function abbreviateCity(city) {
+  if (!city) return ''
+  // Return first word or abbreviation for long names
+  const parts = city.split(/[\s,]+/)
+  return parts[0]
+}
+
 export default function WeatherWidget({ instanceId }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null) // 'denied' | 'error'
@@ -71,7 +78,6 @@ export default function WeatherWidget({ instanceId }) {
   }, [])
 
   useEffect(() => {
-    // Try to use cached data first
     const cached = storage.get(`weather-cache-${instanceId}`)
     if (cached && Date.now() - cached.ts < REFRESH_INTERVAL) {
       setData(cached.data)
@@ -80,7 +86,6 @@ export default function WeatherWidget({ instanceId }) {
       return () => clearTimeout(id)
     }
 
-    // Use pinned location if set, otherwise fall back to geolocation
     const pinned = storage.get(pinnedKey)
     if (pinned) {
       fetchWeather(pinned.lat, pinned.lon)
@@ -95,13 +100,8 @@ export default function WeatherWidget({ instanceId }) {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        fetchWeather(pos.coords.latitude, pos.coords.longitude)
-      },
-      () => {
-        setError('denied')
-        setLoading(false)
-      }
+      (pos) => { fetchWeather(pos.coords.latitude, pos.coords.longitude) },
+      () => { setError('denied'); setLoading(false) }
     )
 
     const id = setInterval(() => {
@@ -117,10 +117,7 @@ export default function WeatherWidget({ instanceId }) {
     if (!q) return
     try {
       const results = await api.geocode(q)
-      if (!results.length) {
-        setLocError('Location not found')
-        return
-      }
+      if (!results.length) { setLocError('Location not found'); return }
       const { lat, lon } = results[0]
       storage.set(pinnedKey, { lat, lon })
       setLocating(false)
@@ -145,8 +142,7 @@ export default function WeatherWidget({ instanceId }) {
     return (
       <div className="weather-widget weather-empty">
         <span className="weather-empty-icon">📍</span>
-        <span className="weather-empty-text">Location access denied</span>
-        <span className="weather-empty-hint">Enable location to see weather</span>
+        <span className="weather-empty-text">Location denied</span>
       </div>
     )
   }
@@ -161,36 +157,38 @@ export default function WeatherWidget({ instanceId }) {
   }
 
   const icon = getIcon(data.condition)
+  const cityShort = abbreviateCity(data.city)
+  const tooltipText = `${data.condition} · Feels like ${formatTemp(data.feelsLike, tempUnit)} · ${formatTemp(data.high, tempUnit)}/${formatTemp(data.low, tempUnit)}`
+
+  if (locating) {
+    return (
+      <div className="weather-widget weather-locating">
+        <form className="weather-location-form" onSubmit={handleLocationSubmit}>
+          <input
+            className="weather-location-input"
+            autoFocus
+            value={locSearch}
+            onChange={(e) => { setLocSearch(e.target.value); setLocError(null) }}
+            onKeyDown={(e) => e.key === 'Escape' && (setLocating(false), setLocSearch(''), setLocError(null))}
+            placeholder="Search city…"
+          />
+          {locError && <span className="weather-location-error">{locError}</span>}
+        </form>
+      </div>
+    )
+  }
 
   return (
-    <div className="weather-widget">
-      <div className="weather-top">
-        <span className="weather-icon">{icon}</span>
-        <div className="weather-temps">
-          <span className="weather-temp">{formatTemp(data.temp, tempUnit)}</span>
-          <span className="weather-feels">Feels {formatTemp(data.feelsLike, tempUnit)}</span>
-        </div>
-      </div>
-      <div className="weather-bottom">
-        {locating ? (
-          <form className="weather-location-form" onSubmit={handleLocationSubmit}>
-            <input
-              className="weather-location-input"
-              autoFocus
-              value={locSearch}
-              onChange={(e) => { setLocSearch(e.target.value); setLocError(null) }}
-              onKeyDown={(e) => e.key === 'Escape' && (setLocating(false), setLocSearch(''), setLocError(null))}
-              placeholder="Search city…"
-            />
-            {locError && <span className="weather-location-error">{locError}</span>}
-          </form>
-        ) : (
-          <button className="weather-city" onClick={() => setLocating(true)} title="Change location">
-            {data.city} ✎
-          </button>
-        )}
-        <span className="weather-hl">{formatTemp(data.high, tempUnit)} / {formatTemp(data.low, tempUnit)}</span>
-      </div>
+    <div className="weather-widget" title={tooltipText}>
+      <span className="weather-icon-compact">{icon}</span>
+      <span className="weather-temp-compact">{formatTemp(data.temp, tempUnit)}</span>
+      <button
+        className="weather-city-compact"
+        onClick={() => setLocating(true)}
+        title="Change location"
+      >
+        {cityShort}
+      </button>
     </div>
   )
 }

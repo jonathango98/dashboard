@@ -1,17 +1,19 @@
 // Widget type → fixed grid size mapping
-// Components will be filled in as widgets are built in later phases
 
-// Grid: 12 cols × 5 rows
-// Row budget: 1 (info row) + 2 (content row) + 2 (tasks) = 5
+// Grid: 12 cols × 6 rows
+// Row 0: at-a-glance bar (h=1)
+// Row 1: quick links (h=1)
+// Rows 2-3: focus area (h=2)
+// Rows 4-5: workspace (h=2)
 export const WIDGET_SIZES = {
-  greeting:  { w: 4, h: 1 },
-  clock:     { w: 2, h: 2 },
-  weather:   { w: 2, h: 2 },
-  drive:     { w: 2, h: 2 },
-  timer:     { w: 2, h: 3 },
-  bible:     { w: 4, h: 4 },
+  greeting:  { w: 3, h: 1 },
+  clock:     { w: 2, h: 1 },
+  weather:   { w: 3, h: 1 },
+  drive:     { w: 3, h: 1 },
+  timer:     { w: 3, h: 2 },
+  bible:     { w: 4, h: 2 },
   sticky:    { w: 2, h: 3 },
-  tasks:     { w: 8, h: 4 },
+  tasks:     { w: 8, h: 2 },
   link:      { w: 1, h: 1 },
 }
 

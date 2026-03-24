@@ -4,20 +4,28 @@ import { WIDGET_SIZES } from '../widgetRegistry'
 
 const STORAGE_KEY = 'dashboard-layout'
 
-// Default layout (12×5 grid):
+// Default layout (12×6 grid):
 //
-//  Row 0   (h=1): Greeting(2) | Clock(2) | Weather(2) | Drive(2) | [4 free]
-//  Row 1-2 (h=2): Bible(4) | Sticky(2) | [6 free]
-//  Row 3-4 (h=2): Task Board (12)
+//  Row 0     (h=1): Greeting(3) | Clock(2) | Weather(3) | [gap] | Drive(3)
+//  Row 1     (h=1): Link1(1) | Link2(1) | Link3(1) | Link4(1)
+//  Row 1-3   (h=3): Sticky(2) at x=8
+//  Row 2-3   (h=2): Bible(4) at x=0
+//  Row 2-3   (h=2): Timer(3) at x=4
+//  Row 4-5   (h=2): Task Board (8)
 //
 const DEFAULT_LAYOUT = [
   { instanceId: 'greeting-1', type: 'greeting', x: 0, y: 0, ...WIDGET_SIZES.greeting },
-  { instanceId: 'clock-1',    type: 'clock',    x: 2, y: 0, ...WIDGET_SIZES.clock    },
-  { instanceId: 'weather-1',  type: 'weather',  x: 4, y: 0, ...WIDGET_SIZES.weather  },
-  { instanceId: 'drive-1',    type: 'drive',    x: 6, y: 0, ...WIDGET_SIZES.drive    },
-  { instanceId: 'bible-1',    type: 'bible',    x: 0, y: 1, ...WIDGET_SIZES.bible    },
-  { instanceId: 'sticky-1',   type: 'sticky',   x: 4, y: 1, ...WIDGET_SIZES.sticky   },
-  { instanceId: 'tasks-1',    type: 'tasks',    x: 0, y: 3, ...WIDGET_SIZES.tasks    },
+  { instanceId: 'clock-1',    type: 'clock',    x: 3, y: 0, ...WIDGET_SIZES.clock    },
+  { instanceId: 'weather-1',  type: 'weather',  x: 5, y: 0, ...WIDGET_SIZES.weather  },
+  { instanceId: 'drive-1',    type: 'drive',    x: 9, y: 0, ...WIDGET_SIZES.drive    },
+  { instanceId: 'link-1',     type: 'link',     x: 0, y: 1, ...WIDGET_SIZES.link     },
+  { instanceId: 'link-2',     type: 'link',     x: 1, y: 1, ...WIDGET_SIZES.link     },
+  { instanceId: 'link-3',     type: 'link',     x: 2, y: 1, ...WIDGET_SIZES.link     },
+  { instanceId: 'link-4',     type: 'link',     x: 3, y: 1, ...WIDGET_SIZES.link     },
+  { instanceId: 'sticky-1',   type: 'sticky',   x: 8, y: 1, ...WIDGET_SIZES.sticky   },
+  { instanceId: 'bible-1',    type: 'bible',    x: 0, y: 2, ...WIDGET_SIZES.bible    },
+  { instanceId: 'timer-1',    type: 'timer',    x: 4, y: 2, ...WIDGET_SIZES.timer    },
+  { instanceId: 'tasks-1',    type: 'tasks',    x: 0, y: 4, ...WIDGET_SIZES.tasks    },
 ]
 
 function loadLayout() {
@@ -37,7 +45,7 @@ function nextInstanceId(type) {
   return `${type}-${instanceCounters[type]}`
 }
 
-const GRID_ROWS = 5
+const GRID_ROWS = 6
 
 function findFirstFreeSlot(layout, w, h) {
   for (let y = 0; y <= GRID_ROWS - h; y++) {

@@ -1,23 +1,29 @@
 import { useState, useEffect, useRef } from 'react'
+import { format } from 'date-fns'
 import storage from '../storage'
 
 function getGreeting() {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 12) return { text: 'Good morning', icon: '☀️' }
+  if (h < 17) return { text: 'Good afternoon', icon: '🌤️' }
+  return { text: 'Good evening', icon: '🌙' }
 }
 
 export default function GreetingWidget() {
   const [name, setName] = useState(() => storage.get('userName') || 'Friend')
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
-  const [greeting, setGreeting] = useState(getGreeting)
+  const [greeting, setGreeting] = useState(getGreeting())
+  const [now, setNow] = useState(() => new Date())
   const inputRef = useRef(null)
 
-  // Update greeting phase every minute
+  // Update greeting phase every minute, tick date
   useEffect(() => {
-    const id = setInterval(() => setGreeting(getGreeting()), 60_000)
+    const id = setInterval(() => {
+      setGreeting(getGreeting())
+      setNow(new Date())
+    }, 60_000)
+
     return () => clearInterval(id)
   }, [])
 
@@ -49,25 +55,34 @@ export default function GreetingWidget() {
     if (e.key === 'Escape') setEditing(false)
   }
 
+  const dateStr = format(now, 'EEEE, MMMM d')
+
   return (
     <div className="greeting-widget">
-      <p className="greeting-line">{greeting},</p>
-      {editing ? (
-        <input
-          ref={inputRef}
-          className="greeting-name-input"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commitEdit}
-          onKeyDown={handleKeyDown}
-          autoFocus
-          maxLength={40}
-        />
-      ) : (
-        <button className="greeting-name-btn" onClick={startEdit} title="Click to edit your name">
-          {name}
-        </button>
-      )}
+      <div className="greeting-accent-bar" />
+      <div className="greeting-content">
+        <div className="greeting-line">
+          <span className="greeting-icon">{greeting.icon}</span>
+          <span className="greeting-salutation">{greeting.text}, </span>
+          {editing ? (
+            <input
+              ref={inputRef}
+              className="greeting-name-input"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={commitEdit}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              maxLength={40}
+            />
+          ) : (
+            <button className="greeting-name-btn" onClick={startEdit} title="Click to edit your name">
+              {name}
+            </button>
+          )}
+        </div>
+        <div className="greeting-date">{dateStr}</div>
+      </div>
     </div>
   )
 }

@@ -53,7 +53,7 @@ export default function App({ onReady }) {
   }
 
   return (
-    <div className="app">
+    <div className={`app${isEditMode ? ' edit-mode' : ''}`}>
       <div className="topbar">
 <div className="topbar-right">
           {!isEditMode ? (

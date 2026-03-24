@@ -25,7 +25,6 @@ function fmtMSS(ms) {
 }
 
 function parseMMSS(str) {
-  // Accept "MM:SS", "M:SS", or plain minutes
   const parts = str.trim().split(':')
   if (parts.length === 2) {
     const m = parseInt(parts[0], 10) || 0
@@ -42,11 +41,11 @@ const POMO_DEFAULTS = { focus: 25, short: 5, long: 15 }
 
 function makePomo(overrides = {}) {
   return {
-    phase: 'focus',      // 'focus' | 'short' | 'long'
-    session: 1,          // 1–4
+    phase: 'focus',
+    session: 1,
     running: false,
     startedAt: null,
-    elapsed: 0,          // ms elapsed before current start
+    elapsed: 0,
     durations: { ...POMO_DEFAULTS },
     ...overrides,
   }
@@ -67,24 +66,10 @@ function pomoRemainingMs(pomo) {
 function nextPomoPhase(pomo) {
   if (pomo.phase === 'focus') {
     const isLast = pomo.session === 4
-    return {
-      ...pomo,
-      phase: isLast ? 'long' : 'short',
-      elapsed: 0,
-      startedAt: Date.now(),
-      running: true,
-    }
+    return { ...pomo, phase: isLast ? 'long' : 'short', elapsed: 0, startedAt: Date.now(), running: true }
   } else {
-    // After break → next focus session
     const nextSession = pomo.phase === 'long' ? 1 : (pomo.session % 4) + 1
-    return {
-      ...pomo,
-      phase: 'focus',
-      session: nextSession,
-      elapsed: 0,
-      startedAt: Date.now(),
-      running: true,
-    }
+    return { ...pomo, phase: 'focus', session: nextSession, elapsed: 0, startedAt: Date.now(), running: true }
   }
 }
 
@@ -92,7 +77,7 @@ function nextPomoPhase(pomo) {
 
 function makeCountdown(overrides = {}) {
   return {
-    totalMs: 5 * 60_000,  // default 5 min
+    totalMs: 5 * 60_000,
     running: false,
     startedAt: null,
     elapsed: 0,
@@ -107,6 +92,39 @@ function countdownRemainingMs(cd) {
   return Math.max(0, cd.totalMs - totalElapsed)
 }
 
+// ── Progress Ring ─────────────────────────────────────────────────────────────
+
+function ProgressRing({ progress, children, size = 110 }) {
+  const radius = (size - 8) / 2
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference * (1 - Math.max(0, Math.min(1, progress)))
+
+  return (
+    <div className="timer-ring-container" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="timer-ring-svg">
+        <circle
+          cx={size / 2} cy={size / 2} r={radius}
+          fill="none"
+          stroke="var(--border)"
+          strokeWidth={4}
+        />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius}
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth={4}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ transition: 'stroke-dashoffset 1s linear' }}
+        />
+      </svg>
+      <div className="timer-ring-inner">{children}</div>
+    </div>
+  )
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function TimerWidget({ instanceId }) {
@@ -117,25 +135,21 @@ export default function TimerWidget({ instanceId }) {
   const [pomo, setPomo] = useState(() => makePomo(savedState.pomo || {}))
   const [cd, setCd] = useState(() => makeCountdown(savedState.cd || {}))
 
-  // For editing duration displays inline
-  const [editingPomoPhase, setEditingPomoPhase] = useState(null) // 'focus'|'short'|'long'|null
+  const [editingPomoPhase, setEditingPomoPhase] = useState(null)
   const [editingDraft, setEditingDraft] = useState('')
   const [editingCd, setEditingCd] = useState(false)
   const [editingCdDraft, setEditingCdDraft] = useState('')
 
   const tickRef = useRef(null)
 
-  // Persist state on change
   useEffect(() => {
     storage.set(storeKey, { tab, pomo, cd })
   }, [tab, pomo, cd])
 
-  // Request notification permission once
   useEffect(() => {
     requestNotifPermission()
   }, [])
 
-  // Tick loop
   useEffect(() => {
     function tick() {
       if (tab === 'pomodoro') {
@@ -143,12 +157,8 @@ export default function TimerWidget({ instanceId }) {
           if (!prev.running) return prev
           const remaining = pomoRemainingMs(prev)
           if (remaining > 0) return prev
-          // Phase complete
-          if (prev.phase === 'focus') {
-            sendNotif('Focus session complete!', 'Time for a break.')
-          } else {
-            sendNotif('Break over!', 'Time to focus.')
-          }
+          if (prev.phase === 'focus') sendNotif('Focus session complete!', 'Time for a break.')
+          else sendNotif('Break over!', 'Time to focus.')
           return nextPomoPhase(prev)
         })
       } else {
@@ -168,29 +178,19 @@ export default function TimerWidget({ instanceId }) {
   // ── Pomodoro controls ──────────────────────────────────────────────────────
 
   function pomoStart() {
-    setPomo((prev) => ({
-      ...prev,
-      running: true,
-      startedAt: Date.now(),
-    }))
+    setPomo((prev) => ({ ...prev, running: true, startedAt: Date.now() }))
   }
 
   function pomoPause() {
     setPomo((prev) => ({
-      ...prev,
-      running: false,
+      ...prev, running: false,
       elapsed: prev.elapsed + (Date.now() - prev.startedAt),
       startedAt: null,
     }))
   }
 
   function pomoReset() {
-    setPomo((prev) => ({
-      ...prev,
-      running: false,
-      elapsed: 0,
-      startedAt: null,
-    }))
+    setPomo((prev) => ({ ...prev, running: false, elapsed: 0, startedAt: null }))
   }
 
   function pomoEditDuration(phase) {
@@ -201,10 +201,7 @@ export default function TimerWidget({ instanceId }) {
   function pomoCommitDuration() {
     const mins = Math.max(1, Math.min(99, parseInt(editingDraft, 10) || pomo.durations[editingPomoPhase]))
     setPomo((prev) => ({
-      ...prev,
-      running: false,
-      elapsed: 0,
-      startedAt: null,
+      ...prev, running: false, elapsed: 0, startedAt: null,
       durations: { ...prev.durations, [editingPomoPhase]: mins },
     }))
     setEditingPomoPhase(null)
@@ -214,40 +211,22 @@ export default function TimerWidget({ instanceId }) {
 
   function cdStart() {
     if (cd.done) {
-      // Reset then start
-      setCd((prev) => ({
-        ...prev,
-        done: false,
-        elapsed: 0,
-        startedAt: Date.now(),
-        running: true,
-      }))
+      setCd((prev) => ({ ...prev, done: false, elapsed: 0, startedAt: Date.now(), running: true }))
     } else {
-      setCd((prev) => ({
-        ...prev,
-        running: true,
-        startedAt: Date.now(),
-      }))
+      setCd((prev) => ({ ...prev, running: true, startedAt: Date.now() }))
     }
   }
 
   function cdPause() {
     setCd((prev) => ({
-      ...prev,
-      running: false,
+      ...prev, running: false,
       elapsed: prev.elapsed + (Date.now() - prev.startedAt),
       startedAt: null,
     }))
   }
 
   function cdReset() {
-    setCd((prev) => ({
-      ...prev,
-      running: false,
-      elapsed: 0,
-      startedAt: null,
-      done: false,
-    }))
+    setCd((prev) => ({ ...prev, running: false, elapsed: 0, startedAt: null, done: false }))
   }
 
   function cdEditDuration() {
@@ -258,18 +237,10 @@ export default function TimerWidget({ instanceId }) {
   function cdCommitDuration() {
     const ms = parseMMSS(editingCdDraft)
     const clamped = Math.max(1000, Math.min(99 * 60 * 60_000, ms))
-    setCd((prev) => ({
-      ...prev,
-      totalMs: clamped,
-      elapsed: 0,
-      running: false,
-      startedAt: null,
-      done: false,
-    }))
+    setCd((prev) => ({ ...prev, totalMs: clamped, elapsed: 0, running: false, startedAt: null, done: false }))
     setEditingCd(false)
   }
 
-  // ── Re-render every 500ms when running ────────────────────────────────────
   const [, forceRender] = useState(0)
   useEffect(() => {
     const isRunning = tab === 'pomodoro' ? pomo.running : cd.running
@@ -278,140 +249,127 @@ export default function TimerWidget({ instanceId }) {
     return () => clearInterval(id)
   }, [tab, pomo.running, cd.running])
 
-  // ── Render helpers ─────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
 
-  function renderPomodoro() {
-    const remaining = pomoRemainingMs(pomo)
-    const phaseLabel = pomo.phase === 'focus' ? 'Focus' : pomo.phase === 'short' ? 'Short Break' : 'Long Break'
-    const d = pomo.durations
-
-    return (
-      <div className="timer-body">
-        <div className="timer-phase-label">{phaseLabel}</div>
-
-        <div className="timer-countdown">{fmtMSS(remaining)}</div>
-
-        <div className="timer-session">Session {pomo.session} of 4</div>
-
-        <div className="timer-controls">
-          {pomo.running ? (
-            <button className="timer-btn" onClick={pomoPause}>Pause</button>
-          ) : (
-            <button className="timer-btn timer-btn-primary" onClick={pomoStart}>Start</button>
-          )}
-          <button className="timer-btn" onClick={pomoReset}>Reset</button>
-        </div>
-
-        <div className="timer-durations">
-          {(['focus', 'short', 'long'] ).map((phase) => (
-            <div key={phase} className="timer-dur-item">
-              <span className="timer-dur-label">
-                {phase === 'focus' ? 'Focus' : phase === 'short' ? 'Short' : 'Long'}
-              </span>
-              {editingPomoPhase === phase ? (
-                <input
-                  className="timer-dur-input"
-                  value={editingDraft}
-                  onChange={(e) => setEditingDraft(e.target.value)}
-                  onBlur={pomoCommitDuration}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') pomoCommitDuration()
-                    if (e.key === 'Escape') setEditingPomoPhase(null)
-                  }}
-                  autoFocus
-                  maxLength={3}
-                />
-              ) : (
-                <button
-                  className="timer-dur-val"
-                  onClick={() => pomoEditDuration(phase)}
-                  title="Click to edit"
-                >
-                  {d[phase]}m
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  function renderCountdown() {
-    const remaining = countdownRemainingMs(cd)
-
-    return (
-      <div className="timer-body">
-        <div className="timer-phase-label">{cd.label || 'Countdown'}</div>
-
-        {editingCd ? (
-          <input
-            className="timer-countdown timer-countdown-input"
-            value={editingCdDraft}
-            onChange={(e) => setEditingCdDraft(e.target.value)}
-            onBlur={cdCommitDuration}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') cdCommitDuration()
-              if (e.key === 'Escape') setEditingCd(false)
-            }}
-            autoFocus
-            placeholder="MM:SS"
-          />
-        ) : (
-          <button
-            className="timer-countdown timer-countdown-btn"
-            onClick={!cd.running ? cdEditDuration : undefined}
-            title={!cd.running ? 'Click to set duration' : undefined}
-            style={{ cursor: cd.running ? 'default' : 'pointer' }}
-          >
-            {fmtMSS(remaining)}
-          </button>
-        )}
-
-        {cd.done && <div className="timer-done-label">Done!</div>}
-
-        <div className="timer-label-row">
-          <input
-            className="timer-label-input"
-            placeholder="Label (optional)"
-            value={cd.label}
-            onChange={(e) => setCd((prev) => ({ ...prev, label: e.target.value }))}
-            maxLength={30}
-          />
-        </div>
-
-        <div className="timer-controls">
-          {cd.running ? (
-            <button className="timer-btn" onClick={cdPause}>Pause</button>
-          ) : (
-            <button className="timer-btn timer-btn-primary" onClick={cdStart}>
-              {cd.done ? 'Restart' : 'Start'}
-            </button>
-          )}
-          <button className="timer-btn" onClick={cdReset}>Reset</button>
-        </div>
-      </div>
-    )
-  }
+  const isPomodoro = tab === 'pomodoro'
+  const remaining = isPomodoro ? pomoRemainingMs(pomo) : countdownRemainingMs(cd)
+  const total = isPomodoro ? pomoPhaseMs(pomo) : cd.totalMs
+  const progress = total > 0 ? (total - remaining) / total : 0
+  const isRunning = isPomodoro ? pomo.running : cd.running
+  const phaseLabel = isPomodoro
+    ? (pomo.phase === 'focus' ? 'Focus' : pomo.phase === 'short' ? 'Short Break' : 'Long Break')
+    : (cd.label || 'Countdown')
 
   return (
     <div className="timer-widget">
+      {/* Mode tabs */}
       <div className="timer-tabs">
         <button
-          className={`timer-tab ${tab === 'pomodoro' ? 'active' : ''}`}
+          className={`timer-tab${tab === 'pomodoro' ? ' active' : ''}`}
           onClick={() => setTab('pomodoro')}
         >
           Pomodoro
         </button>
         <button
-          className={`timer-tab ${tab === 'countdown' ? 'active' : ''}`}
+          className={`timer-tab${tab === 'countdown' ? ' active' : ''}`}
           onClick={() => setTab('countdown')}
         >
           Countdown
         </button>
       </div>
 
-      {tab === 'pomodoro' ? renderPomodoro() : renderCountdown()}
+      {/* Horizontal body: ring left, controls right */}
+      <div className="timer-body">
+        {/* Progress ring */}
+        <ProgressRing progress={progress}>
+          {editingCd && !isPomodoro ? (
+            <input
+              className="timer-ring-input"
+              value={editingCdDraft}
+              onChange={(e) => setEditingCdDraft(e.target.value)}
+              onBlur={cdCommitDuration}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') cdCommitDuration()
+                if (e.key === 'Escape') setEditingCd(false)
+              }}
+              autoFocus
+              placeholder="MM:SS"
+            />
+          ) : (
+            <button
+              className="timer-ring-time"
+              onClick={!isPomodoro && !isRunning ? cdEditDuration : undefined}
+              style={{ cursor: !isPomodoro && !isRunning ? 'pointer' : 'default' }}
+              title={!isPomodoro && !isRunning ? 'Click to set duration' : undefined}
+            >
+              {fmtMSS(remaining)}
+            </button>
+          )}
+        </ProgressRing>
+
+        {/* Right side: info + controls */}
+        <div className="timer-info">
+          <div className="timer-phase-label">{phaseLabel}</div>
+          {isPomodoro && (
+            <div className="timer-session">
+              Session {pomo.session} of 4
+            </div>
+          )}
+          {isPomodoro && (
+            <div className="timer-dur-row">
+              {(['focus', 'short', 'long']).map((phase) => (
+                <div key={phase} className="timer-dur-item">
+                  <span className="timer-dur-label">
+                    {phase === 'focus' ? 'F' : phase === 'short' ? 'S' : 'L'}
+                  </span>
+                  {editingPomoPhase === phase ? (
+                    <input
+                      className="timer-dur-input"
+                      value={editingDraft}
+                      onChange={(e) => setEditingDraft(e.target.value)}
+                      onBlur={pomoCommitDuration}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') pomoCommitDuration()
+                        if (e.key === 'Escape') setEditingPomoPhase(null)
+                      }}
+                      autoFocus
+                      maxLength={3}
+                    />
+                  ) : (
+                    <button className="timer-dur-val" onClick={() => pomoEditDuration(phase)} title="Click to edit">
+                      {pomo.durations[phase]}m
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {!isPomodoro && (
+            <div className="timer-label-row">
+              <input
+                className="timer-label-input"
+                placeholder="Label (optional)"
+                value={cd.label}
+                onChange={(e) => setCd((prev) => ({ ...prev, label: e.target.value }))}
+                maxLength={30}
+              />
+            </div>
+          )}
+          {!isPomodoro && cd.done && (
+            <div className="timer-done-label">Done!</div>
+          )}
+          <div className="timer-controls">
+            {isRunning ? (
+              <button className="timer-btn" onClick={isPomodoro ? pomoPause : cdPause}>Pause</button>
+            ) : (
+              <button className="timer-btn timer-btn-primary" onClick={isPomodoro ? pomoStart : cdStart}>
+                {!isPomodoro && cd.done ? 'Restart' : '▶ Start'}
+              </button>
+            )}
+            <button className="timer-btn" onClick={isPomodoro ? pomoReset : cdReset} title="Reset">↺</button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
