@@ -12,9 +12,12 @@ export const WIDGET_SIZES = {
   drive:     { w: 2, h: 1 },
   timer:     { w: 3, h: 2 },
   bible:     { w: 4, h: 2 },
-  sticky:    { w: 2, h: 3 },
+  sticky:    { w: 3, h: 3 },
   tasks:     { w: 8, h: 2 },
   link:      { w: 1, h: 1 },
+  fidget:    { w: 2, h: 2 },
+  dvd:       { w: 2, h: 2 },
+  snorlax:   { w: 2, h: 2 },
 }
 
 export const WIDGET_LABELS = {
@@ -27,6 +30,9 @@ export const WIDGET_LABELS = {
   sticky:   'Sticky Note',
   tasks:    'Task Board',
   link:     'Link Button',
+  fidget:   'Fidget Toy',
+  dvd:      'DVD',
+  snorlax:  'Pet',
 }
 
 // Registry maps widget type → React component
@@ -39,6 +45,9 @@ import BibleVerseWidget  from './components/BibleVerseWidget'
 import StickyNoteWidget  from './components/StickyNoteWidget'
 import TaskBoardWidget   from './components/tasks/TaskBoardWidget'
 import LinkWidget        from './components/LinkWidget'
+import FidgetWidget      from './components/VirtualPetWidget'
+import DvdWidget         from './components/DvdWidget'
+import SnorlaxWidget     from './components/SnorlaxWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -50,6 +59,9 @@ const registry = {
   sticky:   StickyNoteWidget,
   tasks:    TaskBoardWidget,
   link:     LinkWidget,
+  fidget:   FidgetWidget,
+  dvd:      DvdWidget,
+  snorlax:  SnorlaxWidget,
 }
 
 export function registerWidget(type, component) {
