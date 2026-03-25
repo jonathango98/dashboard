@@ -9,10 +9,16 @@ const REPEL_R = 70
 const SPRING = 0.10
 const DAMPING = 0.72
 
-// Accent color: #F5C518 — dots are muted at rest, accent when displaced
-const DOT_REST  = 'rgba(245, 197, 24, 0.25)'
-const DOT_LIVE  = '#F5C518'
-const DOT_GLOW  = 'rgba(245, 197, 24, 0.18)'
+// Accent color pulled from CSS variable — dots are muted at rest, accent when displaced
+function getAccentColors() {
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+  const glow   = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim()
+  return {
+    live: accent || '#F5C518',
+    rest: glow   || 'rgba(245, 197, 24, 0.25)',
+    glow: glow   || 'rgba(245, 197, 24, 0.18)',
+  }
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -51,6 +57,7 @@ export default function FidgetWidget() {
 
     function tick() {
       const { x: mx, y: my } = mouseRef.current
+      const { live: DOT_LIVE, rest: DOT_REST, glow: DOT_GLOW } = getAccentColors()
       ctx.clearRect(0, 0, W, H)
 
       for (const d of (dotsRef.current || [])) {
