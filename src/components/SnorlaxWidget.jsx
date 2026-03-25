@@ -4,7 +4,7 @@ import storage from '../storage'
 const FRAME_SIZE  = 32
 const WALK_FRAMES = 6
 const JUMP_FRAMES = 8
-const FRAME_MS    = 120
+const FRAME_MS    = 180
 
 function randLoops() { return 3 + Math.floor(Math.random() * 4) }
 
