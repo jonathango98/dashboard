@@ -478,6 +478,8 @@ body::before {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  flex: 1;
   padding: 12px 16px;
   gap: 3px;
   min-width: 0;
@@ -598,6 +600,7 @@ body::before {
 
 .timer-tabs {
   display: flex;
+  justify-content: center;
   gap: 6px;
   padding: 12px 16px 8px;
   flex-shrink: 0;
@@ -628,6 +631,7 @@ body::before {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   flex: 1;
   padding: 8px 16px 16px;
   gap: 16px;
@@ -683,7 +687,6 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
   min-width: 0;
 }
 

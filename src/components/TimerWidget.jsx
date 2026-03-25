@@ -257,7 +257,7 @@ export default function TimerWidget({ instanceId }) {
   const progress = total > 0 ? (total - remaining) / total : 0
   const isRunning = isPomodoro ? pomo.running : cd.running
   const phaseLabel = isPomodoro
-    ? (pomo.phase === 'focus' ? 'Focus' : pomo.phase === 'short' ? 'Short Break' : 'Long Break')
+    ? (pomo.phase === 'focus' ? 'Focus' : pomo.phase === 'short' ? 'Short' : 'Long')
     : (cd.label || 'Countdown')
 
   return (
@@ -348,7 +348,7 @@ export default function TimerWidget({ instanceId }) {
             <div className="timer-label-row">
               <input
                 className="timer-label-input"
-                placeholder="Label (optional)"
+                placeholder="Label"
                 value={cd.label}
                 onChange={(e) => setCd((prev) => ({ ...prev, label: e.target.value }))}
                 maxLength={30}
