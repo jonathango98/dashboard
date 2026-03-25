@@ -14,4 +14,5 @@ export const api = {
     if (origin) params.set('origin', origin)
     return request(`/api/drive?${params}`)
   },
+  getExchangeRate: (from, to) => request(`/api/exchange?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
 }

@@ -19,6 +19,7 @@ export const WIDGET_SIZES = {
   dvd:       { w: 2, h: 2 },
   snorlax:   { w: 2, h: 2 },
   blackjack: { w: 2, h: 2 },
+  exchange:  { w: 2, h: 1 },
 }
 
 export const WIDGET_LABELS = {
@@ -35,6 +36,7 @@ export const WIDGET_LABELS = {
   dvd:      'DVD',
   snorlax:   'Pet',
   blackjack: 'Blackjack',
+  exchange:  'Exchange Rate',
 }
 
 // Registry maps widget type → React component
@@ -50,7 +52,8 @@ import LinkWidget        from './components/LinkWidget'
 import FidgetWidget      from './components/VirtualPetWidget'
 import DvdWidget         from './components/DvdWidget'
 import SnorlaxWidget     from './components/SnorlaxWidget'
-import BlackjackWidget   from './components/BlackjackWidget'
+import BlackjackWidget      from './components/BlackjackWidget'
+import ExchangeRateWidget   from './components/ExchangeRateWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -66,6 +69,7 @@ const registry = {
   dvd:      DvdWidget,
   snorlax:   SnorlaxWidget,
   blackjack: BlackjackWidget,
+  exchange:  ExchangeRateWidget,
 }
 
 export function registerWidget(type, component) {
