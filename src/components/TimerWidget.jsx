@@ -274,7 +274,7 @@ export default function TimerWidget({ instanceId }) {
           className={`timer-tab${tab === 'countdown' ? ' active' : ''}`}
           onClick={() => setTab('countdown')}
         >
-          Countdown
+          Timer
         </button>
       </div>
 
