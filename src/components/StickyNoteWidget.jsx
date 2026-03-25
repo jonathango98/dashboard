@@ -161,7 +161,7 @@ export default function StickyNoteWidget({ instanceId }) {
           value={text}
           onChange={handleChange}
           placeholder={"Jot something down…\n\n*bold*  _italic_  ~strikeout~\n- bullet\n1. numbered"}
-          spellCheck={false}
+          spellCheck={true}
         />
       )}
     </div>
