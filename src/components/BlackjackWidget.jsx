@@ -31,9 +31,9 @@ function Card({ card, hidden }) {
     <div style={{
       width: 40, height: 56, borderRadius: 5, flexShrink: 0,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      background: hidden ? '#2A2A2A' : 'var(--bg-card)',
-      border: `1px solid ${hidden ? '#444' : 'var(--border)'}`,
-      color: hidden ? '#555' : (red ? '#EF4444' : 'var(--text-primary)'),
+      background: hidden ? 'var(--border)' : 'var(--bg-card)',
+      border: `1px solid var(--border)`,
+      color: hidden ? 'transparent' : (red ? '#EF4444' : 'var(--text-primary)'),
       fontSize: hidden ? 18 : 13, fontWeight: 700,
       fontFamily: 'DM Mono, monospace', lineHeight: 1.1,
     }}>
@@ -126,9 +126,9 @@ export default function BlackjackWidget() {
   return (
     <div style={{
       width: '100%', height: '100%', borderRadius: 'inherit', boxSizing: 'border-box',
-      background: '#1E1E1E', padding: '10px 10px 8px',
+      background: 'var(--bg-card)', padding: '10px 10px 8px',
       display: 'flex', flexDirection: 'column', gap: 6,
-      fontFamily: 'Plus Jakarta Sans, sans-serif', color: '#F0EFEA',
+      fontFamily: 'Plus Jakarta Sans, sans-serif', color: 'var(--text-primary)',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -138,7 +138,7 @@ export default function BlackjackWidget() {
         <div style={{ display: 'flex', gap: 6, fontFamily: 'DM Mono, monospace', fontSize: 9 }}>
           <span style={{ color: '#4ADE80' }}>{stats.w}W</span>
           <span style={{ color: '#F87171' }}>{stats.l}L</span>
-          <span style={{ color: 'rgba(240,239,234,0.4)' }}>{stats.p}P</span>
+          <span style={{ color: 'var(--text-secondary)' }}>{stats.p}P</span>
         </div>
       </div>
 
@@ -191,7 +191,7 @@ export default function BlackjackWidget() {
         {phase === 'playing' ? (
           <>
             <button onClick={hit} style={btn('var(--accent)', '#111', 1)}>Hit</button>
-            <button onClick={stand} style={btn('rgba(255,255,255,0.15)', '#F0EFEA', 1)}>Stand</button>
+            <button onClick={stand} style={btn('var(--border)', 'var(--text-primary)', 1)}>Stand</button>
           </>
         ) : (
           <button onClick={deal} style={btn('var(--accent)', '#111', 1)}>
