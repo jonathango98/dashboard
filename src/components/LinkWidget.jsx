@@ -77,8 +77,7 @@ export default function LinkWidget({ instanceId }) {
       <a
         className="link-widget-btn react-grid-layout-cancel"
         href={config.url || '#'}
-        target="_blank"
-        rel="noopener noreferrer"
+        target="_self"
         onClick={(e) => !config.url && e.preventDefault()}
       >
         {faviconUrl ? (
