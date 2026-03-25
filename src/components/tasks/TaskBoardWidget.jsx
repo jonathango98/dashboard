@@ -15,7 +15,7 @@ import TaskModal from './TaskModal'
 
 const COLUMNS = [
   { id: 'todo',        label: 'Todo',        color: 'var(--border)' },
-  { id: 'in_progress', label: 'In Progress', color: 'var(--accent)' },
+  { id: 'in_progress', label: 'In Progress', color: '#F5C518' },
   { id: 'done',        label: 'Done',        color: '#22C55E' },
 ]
 

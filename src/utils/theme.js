@@ -25,8 +25,8 @@ export function applyAccent(accent) {
     return el
   })()
   style.textContent = `
-    :root { --accent: ${c.color}; --accent-glow: ${c.glow}; }
-    :root[data-theme="dark"] { --accent-glow: ${c.glowDark}; }
+    :root, :root[data-theme="light"] { --accent: ${c.color}; --accent-glow: ${c.glow}; }
+    :root[data-theme="dark"] { --accent: ${c.color}; --accent-glow: ${c.glowDark}; }
   `
 }
 
