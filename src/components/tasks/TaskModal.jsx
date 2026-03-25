@@ -1,17 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
 import { IMPORTANCE_COLORS } from './TaskCard'
 
+function defaultDeadline() {
+  const d = new Date()
+  d.setMinutes(0, 0, 0)
+  d.setHours(d.getHours() + 1)
+  // Format as YYYY-MM-DDTHH:MM for datetime-local
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`
+}
+
 const EMPTY = {
   title: '',
   description: '',
-  deadline: '',
+  deadline: defaultDeadline(),
   importance: 3,
   status: 'todo',
 }
 
 export default function TaskModal({ task, onSave, onDelete, onClose }) {
   const isNew = !task
-  const [form, setForm] = useState(isNew ? EMPTY : {
+  const [form, setForm] = useState(isNew ? { ...EMPTY, deadline: defaultDeadline() } : {
     title: task.title,
     description: task.description || '',
     // datetime-local needs YYYY-MM-DDTHH:MM; pad date-only values
