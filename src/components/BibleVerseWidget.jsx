@@ -19,28 +19,16 @@ function isSameDay(ts) {
   )
 }
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 async function fetchVerse(translation) {
   const res = await fetch(
-    `https://dailyverses.net/get/verse.js?language=${translation.toLowerCase()}`
+    `${API_BASE}/api/bible?translation=${translation.toLowerCase()}`
   )
   if (!res.ok) throw new Error('Failed')
-  const raw = await res.text()
-
-  // Response is: document.getElementById("dailyVersesWrapper").innerHTML = '...html...';
-  const match = raw.match(/innerHTML\s*=\s*'([\s\S]*?)';/)
-  if (!match) throw new Error('Unexpected format')
-
-  // Unescape unicode sequences and escaped quotes
-  const html = match[1]
-    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/\\"/g, '"')
-
-  const doc = new DOMParser().parseFromString(html, 'text/html')
-  const text = doc.querySelector('.bibleText')?.textContent?.trim()
-  const reference = doc.querySelector('.bibleVerse a')?.textContent?.trim()
-
-  if (!text || !reference) throw new Error('Could not parse verse')
-  return { text, reference, version: translation }
+  const data = await res.json()
+  if (!data.text || !data.reference) throw new Error('Could not parse verse')
+  return { text: data.text, reference: data.reference, version: translation }
 }
 
 export default function BibleVerseWidget() {
