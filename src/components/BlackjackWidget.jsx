@@ -31,9 +31,9 @@ function Card({ card, hidden }) {
     <div style={{
       width: 26, height: 36, borderRadius: 4, flexShrink: 0,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      background: hidden ? '#2D5A3D' : 'var(--bg-card)',
-      border: `1px solid ${hidden ? '#3D7A52' : 'var(--border)'}`,
-      color: hidden ? '#3D7A52' : (red ? '#EF4444' : 'var(--text-primary)'),
+      background: hidden ? '#2A2A2A' : 'var(--bg-card)',
+      border: `1px solid ${hidden ? '#444' : 'var(--border)'}`,
+      color: hidden ? '#555' : (red ? '#EF4444' : 'var(--text-primary)'),
       fontSize: hidden ? 14 : 9, fontWeight: 700,
       fontFamily: 'DM Mono, monospace', lineHeight: 1.1,
     }}>
@@ -56,6 +56,7 @@ export default function BlackjackWidget() {
   const [dealer, setDealer] = useState([])
   const [phase, setPhase] = useState('idle') // idle | playing | done
   const [result, setResult] = useState(null)
+  const [stats, setStats] = useState({ w: 0, l: 0, p: 0 })
 
   const deal = () => {
     const d = newDeck()
@@ -68,8 +69,10 @@ export default function BlackjackWidget() {
     setResult(null)
 
     if (total(p) === 21) {
-      setResult(total(dl) === 21 ? 'push' : 'blackjack')
+      const r = total(dl) === 21 ? 'push' : 'blackjack'
+      setResult(r)
       setPhase('done')
+      setStats(s => ({ ...s, w: r === 'blackjack' ? s.w + 1 : s.w, p: r === 'push' ? s.p + 1 : s.p }))
     } else {
       setPhase('playing')
     }
@@ -83,6 +86,7 @@ export default function BlackjackWidget() {
     if (total(p) > 21) {
       setResult('bust')
       setPhase('done')
+      setStats(s => ({ ...s, l: s.l + 1 }))
     }
   }
 
@@ -95,8 +99,14 @@ export default function BlackjackWidget() {
 
     const pt = total(player)
     const dt = total(dl)
-    setResult(dt > 21 || pt > dt ? 'win' : pt === dt ? 'push' : 'lose')
+    const r = dt > 21 || pt > dt ? 'win' : pt === dt ? 'push' : 'lose'
+    setResult(r)
     setPhase('done')
+    setStats(s => ({
+      w: r === 'win' ? s.w + 1 : s.w,
+      l: r === 'lose' ? s.l + 1 : s.l,
+      p: r === 'push' ? s.p + 1 : s.p,
+    }))
   }
 
   const resultLabel = {
@@ -116,13 +126,20 @@ export default function BlackjackWidget() {
   return (
     <div style={{
       width: '100%', height: '100%', borderRadius: 'inherit', boxSizing: 'border-box',
-      background: '#1A3828', padding: '10px 10px 8px',
+      background: '#1E1E1E', padding: '10px 10px 8px',
       display: 'flex', flexDirection: 'column', gap: 6,
       fontFamily: 'Plus Jakarta Sans, sans-serif', color: '#F0EFEA',
     }}>
       {/* Header */}
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, opacity: 0.6, textTransform: 'uppercase' }}>
-        Blackjack
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, opacity: 0.6, textTransform: 'uppercase' }}>
+          Blackjack
+        </div>
+        <div style={{ display: 'flex', gap: 6, fontFamily: 'DM Mono, monospace', fontSize: 9 }}>
+          <span style={{ color: '#4ADE80' }}>{stats.w}W</span>
+          <span style={{ color: '#F87171' }}>{stats.l}L</span>
+          <span style={{ color: 'rgba(240,239,234,0.4)' }}>{stats.p}P</span>
+        </div>
       </div>
 
       {/* Dealer hand */}
