@@ -839,6 +839,13 @@ body::before {
   flex-shrink: 0;
 }
 
+.weather-temp-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
 .weather-temp-compact {
   font-family: 'DM Mono', monospace;
   font-size: 20px;
@@ -846,6 +853,13 @@ body::before {
   color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1;
+}
+
+.weather-range {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-family: 'DM Mono', monospace;
 }
 
 .weather-city-compact {
@@ -939,7 +953,8 @@ body::before {
 .drive-set-prompt:hover { color: var(--text-primary); }
 
 .drive-configured {
-  justify-content: space-between;
+  justify-content: center;
+  gap: 12px;
 }
 
 .drive-label-btn {
@@ -954,23 +969,38 @@ body::before {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100px;
+  max-width: 120px;
   transition: color 0.15s;
   text-align: left;
 }
 .drive-label-btn:hover { color: var(--accent); }
+
+.drive-eta-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.drive-eta-group:hover .drive-eta-compact,
+.drive-eta-group:hover .drive-distance { color: var(--accent); }
 
 .drive-eta-compact {
   font-family: 'DM Mono', monospace;
   font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
-  text-decoration: none;
   letter-spacing: -0.02em;
-  transition: color 0.15s;
   white-space: nowrap;
+  line-height: 1;
 }
-.drive-eta-compact:hover { color: var(--accent); }
+
+.drive-distance {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  margin-top: 2px;
+}
 
 .drive-traffic-dot {
   width: 10px;

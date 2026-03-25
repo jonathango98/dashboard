@@ -177,6 +177,13 @@ export default function DriveWidget({ instanceId }) {
 
   return (
     <div className="drive-widget drive-configured" ref={anchorRef} title={tooltipText}>
+      {data && (
+        <span
+          className="drive-traffic-dot"
+          style={{ background: trafficColor }}
+          title={trafficLabel}
+        />
+      )}
       <button
         className="drive-label-btn"
         onClick={() => setShowEdit(true)}
@@ -186,21 +193,15 @@ export default function DriveWidget({ instanceId }) {
       </button>
       {data && (
         <a
-          className="drive-eta-compact"
+          className="drive-eta-group"
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
         >
-          {data.eta} min
+          <span className="drive-eta-compact">{data.eta} min</span>
+          {data.distance && <span className="drive-distance">{data.distance}</span>}
         </a>
-      )}
-      {data && (
-        <span
-          className="drive-traffic-dot"
-          style={{ background: trafficColor }}
-          title={trafficLabel}
-        />
       )}
       {showEdit && (
         <EditPopover

@@ -181,7 +181,14 @@ export default function WeatherWidget({ instanceId }) {
   return (
     <div className="weather-widget" title={tooltipText}>
       <span className="weather-icon-compact">{icon}</span>
-      <span className="weather-temp-compact">{formatTemp(data.temp, tempUnit)}</span>
+      <div className="weather-temp-group">
+        <span className="weather-temp-compact">{formatTemp(data.temp, tempUnit)}</span>
+        {data.high != null && data.low != null && (
+          <span className="weather-range">
+            {formatTemp(data.high, tempUnit)} / {formatTemp(data.low, tempUnit)}
+          </span>
+        )}
+      </div>
       <button
         className="weather-city-compact"
         onClick={() => setLocating(true)}
