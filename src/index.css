@@ -1659,6 +1659,10 @@ body::before {
 }
 .task-field-input:focus { border-color: var(--accent); }
 
+:root[data-theme="dark"] .task-field-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
 .task-field-textarea {
   resize: vertical;
   min-height: 80px;
