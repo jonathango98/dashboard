@@ -8,10 +8,13 @@ const FRAME_MS    = 180
 
 function randLoops() { return 3 + Math.floor(Math.random() * 4) }
 
+const ASPECT = 180 / 140
+
 export default function SnorlaxWidget({ instanceId }) {
   const [char, setChar] = useState(() => storage.get(`pet-char-${instanceId}`) ?? 1)
   const [hover, setHover] = useState(false)
   const canvasRef = useRef(null)
+  const wrapRef   = useRef(null)
   const rafRef    = useRef(null)
 
   function pickChar(n) {
@@ -19,12 +22,29 @@ export default function SnorlaxWidget({ instanceId }) {
     setChar(n)
   }
 
+  // Keep canvas pixel dimensions in sync with container, preserving aspect ratio
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const wrap   = wrapRef.current
+    if (!canvas || !wrap) return
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      if (width / height > ASPECT) {
+        canvas.width  = Math.round(height * ASPECT)
+        canvas.height = Math.round(height)
+      } else {
+        canvas.width  = Math.round(width)
+        canvas.height = Math.round(width / ASPECT)
+      }
+    })
+    ro.observe(wrap)
+    return () => ro.disconnect()
+  }, [])
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const W = canvas.width
-    const H = canvas.height
     ctx.imageSmoothingEnabled = false
 
     const walkImg = new Image()
@@ -60,6 +80,9 @@ export default function SnorlaxWidget({ instanceId }) {
         }
       }
 
+      const W = canvas.width
+      const H = canvas.height
+      ctx.imageSmoothingEnabled = false
       const sheet = isJumping ? jumpImg : walkImg
       const scale = Math.floor(H * 0.55 / FRAME_SIZE)
       const size  = FRAME_SIZE * scale
@@ -77,7 +100,8 @@ export default function SnorlaxWidget({ instanceId }) {
 
   return (
     <div
-      style={{ width: '100%', height: '100%', borderRadius: 'inherit', overflow: 'hidden', position: 'relative' }}
+      ref={wrapRef}
+      style={{ width: '100%', height: '100%', borderRadius: 'inherit', overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
@@ -85,7 +109,7 @@ export default function SnorlaxWidget({ instanceId }) {
         ref={canvasRef}
         width={180}
         height={140}
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        style={{ display: 'block', imageRendering: 'pixelated' }}
       />
       {hover && (
         <div style={{

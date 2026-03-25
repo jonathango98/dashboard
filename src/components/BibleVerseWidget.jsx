@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
 import storage from '../storage'
 
-const CACHE_KEY = 'bible-verse-cache'
-const API_URL = 'https://beta.ourmanna.com/api/v1/get?format=json&order=daily'
+const TRANSLATIONS = ['NIV', 'NLT', 'ESV']
+const PREF_KEY = 'bible-translation'
+
+function cacheKey(translation) {
+  return `bible-verse-cache-${translation.toLowerCase()}`
+}
 
 function isSameDay(ts) {
   if (!ts) return false
@@ -15,38 +19,76 @@ function isSameDay(ts) {
   )
 }
 
+async function fetchVerse(translation) {
+  const res = await fetch(
+    `https://dailyverses.net/get/verse.js?language=${translation.toLowerCase()}`
+  )
+  if (!res.ok) throw new Error('Failed')
+  const raw = await res.text()
+
+  // Response is: document.getElementById("dailyVersesWrapper").innerHTML = '...html...';
+  const match = raw.match(/innerHTML\s*=\s*'([\s\S]*?)';/)
+  if (!match) throw new Error('Unexpected format')
+
+  // Unescape unicode sequences and escaped quotes
+  const html = match[1]
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\"/g, '"')
+
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  const text = doc.querySelector('.bibleText')?.textContent?.trim()
+  const reference = doc.querySelector('.bibleVerse a')?.textContent?.trim()
+
+  if (!text || !reference) throw new Error('Could not parse verse')
+  return { text, reference, version: translation }
+}
+
 export default function BibleVerseWidget() {
+  const [translation, setTranslation] = useState(
+    () => storage.get(PREF_KEY) || 'NIV'
+  )
   const [verse, setVerse] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    const cached = storage.get(CACHE_KEY)
+    setLoading(true)
+    setError(false)
+
+    const cached = storage.get(cacheKey(translation))
     if (cached && isSameDay(cached.ts)) {
       setVerse(cached.verse)
       setLoading(false)
       return
     }
 
-    fetch(API_URL)
-      .then((r) => {
-        if (!r.ok) throw new Error('Failed')
-        return r.json()
-      })
-      .then((json) => {
-        const details = json?.verse?.details
-        if (!details) throw new Error('Unexpected shape')
-        const verse = {
-          text: details.text?.trim(),
-          reference: details.reference?.trim(),
-          version: details.version?.trim() || 'NIV',
-        }
+    fetchVerse(translation)
+      .then((verse) => {
         setVerse(verse)
-        storage.set(CACHE_KEY, { verse, ts: Date.now() })
+        storage.set(cacheKey(translation), { verse, ts: Date.now() })
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [])
+  }, [translation])
+
+  function handleTranslationChange(t) {
+    storage.set(PREF_KEY, t)
+    setTranslation(t)
+  }
+
+  const translationToggle = (
+    <div className="bible-translation-toggle">
+      {TRANSLATIONS.map((t) => (
+        <button
+          key={t}
+          className={`bible-translation-btn${translation === t ? ' active' : ''}`}
+          onClick={() => handleTranslationChange(t)}
+        >
+          {t}
+        </button>
+      ))}
+    </div>
+  )
 
   if (loading) {
     return (
@@ -59,6 +101,7 @@ export default function BibleVerseWidget() {
   if (error || !verse) {
     return (
       <div className="bible-widget bible-empty">
+        {translationToggle}
         <span className="bible-empty-text">Couldn't load today's verse</span>
       </div>
     )
@@ -71,7 +114,8 @@ export default function BibleVerseWidget() {
         <p className="bible-text">"{verse.text}"</p>
       </div>
       <div className="bible-ref-row">
-        <span className="bible-reference">— {verse.reference} · {verse.version}</span>
+        <span className="bible-reference">— {verse.reference}</span>
+        {translationToggle}
       </div>
     </div>
   )

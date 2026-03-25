@@ -1108,7 +1108,8 @@ body::before {
 .bible-ref-row {
   flex-shrink: 0;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   padding-top: 8px;
 }
 
@@ -1116,7 +1117,33 @@ body::before {
   font-family: 'DM Mono', monospace;
   font-size: 12px;
   color: var(--accent);
-  text-align: right;
+}
+
+.bible-translation-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.bible-translation-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.bible-translation-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.bible-translation-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ── Sticky note widget ── */
