@@ -16,14 +16,6 @@ export default function SettingsPanel({ onClose }) {
     }))
   }
 
-  function handleDestinationChange(e) {
-    storage.set('destination', e.target.value)
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'destination',
-      newValue: JSON.stringify(e.target.value),
-    }))
-  }
-
   function handleAccentChange(key) {
     setAccent(key)
     storage.set('accent', key)
@@ -65,19 +57,6 @@ export default function SettingsPanel({ onClose }) {
             maxLength={40}
           />
           <p className="settings-hint">Used in the Greeting widget.</p>
-        </div>
-
-        {/* Drive destination */}
-        <div className="settings-section">
-          <label className="settings-label">Default destination</label>
-          <input
-            className="settings-input"
-            type="text"
-            defaultValue={storage.get('destination') || ''}
-            onChange={handleDestinationChange}
-            placeholder="e.g. 123 Main St, San Francisco"
-          />
-          <p className="settings-hint">Used in the Drive widget for ETA.</p>
         </div>
 
         {/* Accent color */}
