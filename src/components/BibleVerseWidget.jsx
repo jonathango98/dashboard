@@ -130,13 +130,13 @@ export default function BibleVerseWidget() {
 
   return (
     <div className="bible-widget">
+      {gearMenu}
       <div className="bible-quote-mark">"</div>
       <div className="bible-text-area">
         <p className="bible-text">"{verse.text}"</p>
       </div>
       <div className="bible-ref-row">
         <span className="bible-reference">— {verse.reference}</span>
-        {gearMenu}
       </div>
     </div>
   )
