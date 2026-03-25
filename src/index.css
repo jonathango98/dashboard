@@ -2231,10 +2231,11 @@ body::before {
 
 .countdown-direction {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 /* ── Responsive ── */

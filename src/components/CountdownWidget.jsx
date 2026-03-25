@@ -110,7 +110,10 @@ export default function CountdownWidget({ instanceId }) {
       onClick={() => !showEdit && setShowEdit(true)}
       title="Click to edit"
     >
-      <span className="countdown-label">{config.label}</span>
+      <span className="countdown-label">
+        <span className="countdown-direction">{parts?.past ? 'since' : 'until'}</span>
+        {' '}{config.label}
+      </span>
       <div className="countdown-time">
         {parts ? (
           <>
@@ -122,7 +125,6 @@ export default function CountdownWidget({ instanceId }) {
           <span className="countdown-num">…</span>
         )}
       </div>
-      <span className="countdown-direction">{parts?.past ? 'since' : 'until'}</span>
       {showEdit && anchorRef.current && (
         <EditPopover
           anchor={anchorRef.current}
