@@ -21,7 +21,17 @@ function toWhatsApp(text) {
     // *bold* ~strikethrough~ _italic_ all stay as-is (WhatsApp uses same syntax)
 }
 
-function renderPreview(text) {
+function isCheckboxLine(line) {
+  return /^\[[ x]?\]/.test(line)
+}
+
+function parseCheckbox(line) {
+  const checked = /^\[x\]/i.test(line)
+  const content = line.replace(/^\[[ x]?\]\s?/, '')
+  return { checked, content }
+}
+
+function renderPreview(text, onToggleCheckbox) {
   let numCounter = 0
   const lines = text.split('\n')
   const parts = []
@@ -29,6 +39,32 @@ function renderPreview(text) {
 
   while (i < lines.length) {
     const line = lines[i]
+
+    if (isCheckboxLine(line)) {
+      // collect consecutive checkbox lines
+      const items = []
+      while (i < lines.length && isCheckboxLine(lines[i])) {
+        items.push({ ...parseCheckbox(lines[i]), lineIndex: i })
+        i++
+      }
+      parts.push(
+        <ul key={`cb-${i}`} className="sticky-preview-checklist">
+          {items.map((item) => (
+            <li key={item.lineIndex} className="sticky-preview-checkitem">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  onChange={() => onToggleCheckbox(item.lineIndex)}
+                />
+                <span className={item.checked ? 'sticky-check-done' : ''}>{formatInline(item.content)}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      )
+      continue
+    }
 
     if (/^\d+\.\s/.test(line)) {
       // collect consecutive numbered lines
@@ -118,6 +154,17 @@ export default function StickyNoteWidget({ instanceId }) {
     }, 500)
   }
 
+  function handleToggleCheckbox(lineIndex) {
+    const lines = text.split('\n')
+    const line = lines[lineIndex]
+    const checked = /^\[x\]/i.test(line)
+    const content = line.replace(/^\[[ x]?\]\s?/, '')
+    lines[lineIndex] = checked ? `[] ${content}` : `[x] ${content}`
+    const newText = lines.join('\n')
+    setText(newText)
+    storage.set(`sticky-${instanceId}`, newText)
+  }
+
   function handleCopy() {
     navigator.clipboard.writeText(toWhatsApp(text)).then(() => {
       setCopied(true)
@@ -152,7 +199,7 @@ export default function StickyNoteWidget({ instanceId }) {
           {text.trim() === '' ? (
             <span className="sticky-preview-empty">Nothing to preview…</span>
           ) : (
-            renderPreview(text)
+            renderPreview(text, handleToggleCheckbox)
           )}
         </div>
       ) : (
@@ -160,7 +207,7 @@ export default function StickyNoteWidget({ instanceId }) {
           className="sticky-textarea"
           value={text}
           onChange={handleChange}
-          placeholder={"Jot something down…\n\n*bold*  _italic_  ~strikeout~\n- bullet\n1. numbered"}
+          placeholder={"Jot something down…\n\n*bold*  _italic_  ~strikeout~\n- bullet\n1. numbered\n[] checkbox"}
           spellCheck={true}
         />
       )}

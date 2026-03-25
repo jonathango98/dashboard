@@ -1340,6 +1340,36 @@ body::before {
   font-style: italic;
 }
 
+.sticky-preview-checklist {
+  list-style: none;
+  margin: 4px 0;
+  padding-left: 2px;
+}
+
+.sticky-preview-checkitem {
+  margin: 2px 0;
+}
+
+.sticky-preview-checkitem label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.sticky-preview-checkitem input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.sticky-check-done {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
 /* ── Task board widget ── */
 .task-board-widget {
   display: flex;
