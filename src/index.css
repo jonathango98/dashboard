@@ -1208,6 +1208,67 @@ body::before {
   opacity: 0.5;
 }
 
+.sticky-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.sticky-btn:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.sticky-btn-active {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.sticky-btn-copied {
+  color: #4ade80;
+  border-color: #4ade80;
+}
+
+.sticky-preview {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.sticky-preview-p {
+  margin: 0 0 2px;
+}
+
+.sticky-preview-list {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.sticky-preview-ul {
+  list-style: disc;
+}
+
+.sticky-preview-ol {
+  list-style: decimal;
+}
+
+.sticky-preview-empty {
+  color: var(--text-secondary);
+  opacity: 0.5;
+  font-style: italic;
+}
+
 /* ── Task board widget ── */
 .task-board-widget {
   display: flex;
