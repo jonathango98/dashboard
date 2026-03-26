@@ -8,14 +8,24 @@ const BUTTONS = [
   ['±', '0', '.', '='],
 ]
 
+function formatResult(val) {
+  const abs = Math.abs(val)
+  if (abs >= 1e10 || (abs < 1e-6 && abs > 0)) {
+    let exp = val.toExponential(6)
+    exp = exp.replace(/(\.\d*?)0+(e)/, '$1$2').replace(/\.(e)/, '$1')
+    return exp
+  }
+  return parseFloat(val.toFixed(10)).toString()
+}
+
 function safeEval(expr) {
   try {
-    const sanitized = expr.replace(/[^0-9+\-*/.%()\s]/g, '')
+    const sanitized = expr.replace(/[^0-9+\-*/.%()\seE]/g, '')
     const withPercent = sanitized.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)')
     // eslint-disable-next-line no-new-func
     const val = Function('"use strict"; return (' + withPercent + ')')()
     if (!isFinite(val)) return 'Error'
-    return parseFloat(val.toFixed(10)).toString()
+    return formatResult(val)
   } catch {
     return 'Error'
   }
