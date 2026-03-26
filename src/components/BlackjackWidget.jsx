@@ -29,12 +29,12 @@ function Card({ card, hidden }) {
   const red = card?.s === '♥' || card?.s === '♦'
   return (
     <div style={{
-      width: 40, height: 56, borderRadius: 5, flexShrink: 0,
+      width: 32, height: 46, borderRadius: 4, flexShrink: 0,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       background: hidden ? 'var(--border)' : 'var(--bg-card)',
       border: `1px solid var(--border)`,
       color: hidden ? 'transparent' : (red ? '#EF4444' : 'var(--text-primary)'),
-      fontSize: hidden ? 18 : 13, fontWeight: 700,
+      fontSize: hidden ? 15 : 11, fontWeight: 700,
       fontFamily: 'DM Mono, monospace', lineHeight: 1.1,
     }}>
       {hidden ? '?' : <><span>{card.v}</span><span>{card.s}</span></>}
