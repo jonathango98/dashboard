@@ -97,9 +97,9 @@ export default function SettingsPanel({ onClose }) {
           <label className="settings-label">Temperature unit</label>
           <div className="settings-mode-pills">
             {[
-              { key: 'F', label: '°F Fahrenheit' },
-              { key: 'C', label: '°C Celsius' },
-              { key: 'K', label: 'K Kelvin' },
+              { key: 'F', label: '°F' },
+              { key: 'C', label: '°C' },
+              { key: 'K', label: 'K' },
             ].map(({ key, label }) => (
               <button
                 key={key}
