@@ -21,6 +21,7 @@ export const WIDGET_SIZES = {
   blackjack:  { w: 2, h: 2 },
   exchange:   { w: 2, h: 1 },
   countdown:  { w: 2, h: 1 },
+  calculator: { w: 2, h: 3 },
 }
 
 export const WIDGET_LABELS = {
@@ -39,6 +40,7 @@ export const WIDGET_LABELS = {
   blackjack:  'Blackjack',
   exchange:   'Exchange Rate',
   countdown:  'Countdown',
+  calculator: 'Calculator',
 }
 
 // Registry maps widget type → React component
@@ -57,6 +59,7 @@ import SnorlaxWidget     from './components/SnorlaxWidget'
 import BlackjackWidget      from './components/BlackjackWidget'
 import ExchangeRateWidget   from './components/ExchangeRateWidget'
 import CountdownWidget      from './components/CountdownWidget'
+import CalculatorWidget     from './components/CalculatorWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -74,6 +77,7 @@ const registry = {
   blackjack:  BlackjackWidget,
   exchange:   ExchangeRateWidget,
   countdown:  CountdownWidget,
+  calculator: CalculatorWidget,
 }
 
 export function registerWidget(type, component) {
