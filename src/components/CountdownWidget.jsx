@@ -4,7 +4,7 @@ import storage from '../storage'
 
 function calcParts(targetDate) {
   const now = Date.now()
-  const target = new Date(targetDate).getTime()
+  const target = new Date(`${targetDate}T00:00:00`).getTime()
   const diffMs = Math.abs(target - now)
   const past = target < now
 
