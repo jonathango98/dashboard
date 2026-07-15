@@ -1,5 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { format } from 'date-fns'
+import { api } from '../api'
+import storage from '../storage'
 
 // One mesh gradient per 6-hour block, deterministic from date + block,
 // so everyone gets the same "morning gradient" all morning.
@@ -88,6 +91,53 @@ function generateMesh(dateStr, block, variant) {
   return { base, blobs }
 }
 
+function hexToHsl(hex) {
+  const n = parseInt(hex.slice(1), 16)
+  const r = ((n >> 16) & 255) / 255
+  const g = ((n >> 8) & 255) / 255
+  const b = (n & 255) / 255
+  const max = Math.max(r, g, b), min = Math.min(r, g, b)
+  let h = 0, s = 0
+  const l = (max + min) / 2
+  const d = max - min
+  if (d !== 0) {
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break
+      case g: h = (b - r) / d + 2; break
+      default: h = (r - g) / d + 4; break
+    }
+    h /= 6
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) }
+}
+
+// Build a mesh from 4 AI-picked hex colors. Blob layout is procedurally
+// seeded (so "refresh" can reshuffle composition without another API call);
+// colors themselves are fixed to what Gemini returned.
+function generateMeshFromColors(colors, seedStr) {
+  const rand = mulberry32(hashSeed(seedStr))
+  const hsls = colors.map(hexToHsl)
+
+  const blobs = Array.from({ length: BLOB_COUNT }, (_, i) => ({
+    x: -0.15 + rand() * 1.3,
+    y: -0.15 + rand() * 1.3,
+    f: 0.45 + rand() * 0.4,
+    a: 0.75 + rand() * 0.2,
+    color: hsls[i % hsls.length],
+  }))
+
+  const avgL = hsls.reduce((sum, c) => sum + c.l, 0) / hsls.length
+  const avgS = hsls.reduce((sum, c) => sum + c.s, 0) / hsls.length
+  const base = {
+    h: hsls[0].h,
+    s: Math.round(avgS * 0.6),
+    l: Math.round(Math.min(90, Math.max(8, avgL * 0.4))),
+  }
+
+  return { base, blobs }
+}
+
 // CSS paints the first layer on top; canvas paints in draw order —
 // keep both renderers visually identical by reversing here.
 function meshToCss({ base, blobs }) {
@@ -115,9 +165,23 @@ function drawMesh(ctx, W, H, { base, blobs }) {
   }
 }
 
-export default function MeshGradientWidget() {
+export default function MeshGradientWidget({ instanceId }) {
+  const storageKey = `gradient-ai-${instanceId}`
+
   const [{ block, dateStr }, setKey] = useState(currentBlockKey)
   const [variant, setVariant] = useState(0)
+
+  // AI-generated palette (colors + the prompt that produced them), if any.
+  // Presence of `ai` switches the widget from the automatic time-of-day
+  // gradient to the prompt-driven one; it persists across reloads.
+  const [ai, setAi] = useState(() => storage.get(storageKey) || null)
+  const [aiVariant, setAiVariant] = useState(0)
+
+  const [showPrompt, setShowPrompt] = useState(false)
+  const [promptInput, setPromptInput] = useState(() => storage.get(storageKey)?.prompt || '')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const anchorRef = useRef(null)
 
   // Roll over to the next gradient when the 6-hour block (or date) changes
   useEffect(() => {
@@ -134,12 +198,54 @@ export default function MeshGradientWidget() {
     return () => clearInterval(id)
   }, [])
 
-  const mesh = useMemo(() => generateMesh(dateStr, block, variant), [dateStr, block, variant])
+  const mesh = useMemo(() => {
+    if (ai?.colors?.length === 4) {
+      return generateMeshFromColors(ai.colors, `${instanceId}-ai-${aiVariant}`)
+    }
+    return generateMesh(dateStr, block, variant)
+  }, [ai, aiVariant, dateStr, block, variant, instanceId])
   const background = useMemo(() => meshToCss(mesh), [mesh])
 
   function handleRefresh(e) {
     e.stopPropagation()
-    setVariant((v) => v + 1)
+    if (ai) {
+      setAiVariant((v) => v + 1)
+    } else {
+      setVariant((v) => v + 1)
+    }
+  }
+
+  async function handleGenerate(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    const trimmed = promptInput.trim()
+    if (!trimmed || loading) return
+    setLoading(true)
+    setError('')
+    try {
+      const result = await api.generateGradientColors(trimmed)
+      const colors = result?.colors
+      if (!Array.isArray(colors) || colors.length !== 4) {
+        throw new Error('Unexpected response from server')
+      }
+      const next = { colors, prompt: trimmed }
+      setAi(next)
+      storage.set(storageKey, next)
+      setAiVariant(0)
+      setShowPrompt(false)
+    } catch (err) {
+      setError(err.message || 'Could not generate colors — try again')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleUseAutomatic(e) {
+    e.stopPropagation()
+    setAi(null)
+    storage.remove(storageKey)
+    setAiVariant(0)
+    setShowPrompt(false)
   }
 
   function handleDownload(e) {
@@ -148,29 +254,102 @@ export default function MeshGradientWidget() {
     canvas.width = 1920
     canvas.height = 1080
     drawMesh(canvas.getContext('2d'), 1920, 1080, mesh)
+    const filenamePart = ai ? `ai-v${aiVariant}` : `${block}-${dateStr}${variant > 0 ? `-v${variant}` : ''}`
     canvas.toBlob((blob) => {
       if (!blob) return
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `mesh-${block}-${dateStr}${variant > 0 ? `-v${variant}` : ''}.png`
+      a.download = `mesh-${filenamePart}.png`
       a.click()
       URL.revokeObjectURL(url)
     }, 'image/png')
   }
 
   return (
-    <div className="gradient-widget" style={{ background }}>
+    <div className="gradient-widget" style={{ background }} ref={anchorRef}>
       <div className="gradient-overlay">
-        <span className="gradient-block">{block}</span>
-        <span className="gradient-date">{dateStr}</span>
+        {ai ? (
+          <>
+            <span className="gradient-block">AI vibe</span>
+            <span className="gradient-date gradient-prompt" title={ai.prompt}>{ai.prompt}</span>
+          </>
+        ) : (
+          <>
+            <span className="gradient-block">{block}</span>
+            <span className="gradient-date">{dateStr}</span>
+          </>
+        )}
       </div>
+      <button
+        className="gradient-ai-btn"
+        onClick={(e) => { e.stopPropagation(); setShowPrompt((v) => !v) }}
+        title="Generate colors from a text prompt"
+      >
+        ✨
+      </button>
       <button className="gradient-refresh" onClick={handleRefresh} title="Refresh gradient">
         ↻
       </button>
       <button className="gradient-download" onClick={handleDownload} title="Download as 1920×1080 wallpaper">
         ↓
       </button>
+      {showPrompt && anchorRef.current && (
+        <PromptPopover
+          anchor={anchorRef.current}
+          value={promptInput}
+          onChange={setPromptInput}
+          onSubmit={handleGenerate}
+          onUseAutomatic={ai ? handleUseAutomatic : null}
+          onCancel={(e) => { e.stopPropagation(); setShowPrompt(false); setError('') }}
+          loading={loading}
+          error={error}
+        />
+      )}
     </div>
+  )
+}
+
+function PromptPopover({ anchor, value, onChange, onSubmit, onUseAutomatic, onCancel, loading, error }) {
+  const rect = anchor.getBoundingClientRect()
+
+  const style = {
+    position: 'fixed',
+    top: rect.bottom + 6,
+    left: Math.max(8, rect.right - 260),
+    width: 260,
+    zIndex: 500,
+  }
+
+  return createPortal(
+    <div className="drive-popover" style={style} onClick={(e) => e.stopPropagation()}>
+      <form onSubmit={onSubmit}>
+        <label className="drive-popover-label">Describe a vibe</label>
+        <input
+          className="drive-popover-input"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="sunset over the ocean…"
+          maxLength={200}
+          autoFocus
+          disabled={loading}
+        />
+        {error && <p className="gradient-ai-error">{error}</p>}
+        <div className="drive-popover-actions" style={{ justifyContent: onUseAutomatic ? 'space-between' : 'flex-end' }}>
+          {onUseAutomatic && (
+            <button type="button" className="gradient-ai-reset" onClick={onUseAutomatic} disabled={loading}>
+              Use automatic
+            </button>
+          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className="drive-popover-cancel" onClick={onCancel} disabled={loading}>Cancel</button>
+            <button type="submit" className="drive-popover-save" disabled={loading || !value.trim()}>
+              {loading ? 'Generating…' : 'Generate'}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>,
+    document.body
   )
 }

@@ -2507,8 +2507,17 @@ body::before {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
+.gradient-prompt {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
 .gradient-download,
-.gradient-refresh {
+.gradient-refresh,
+.gradient-ai-btn {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -2533,12 +2542,38 @@ body::before {
   right: 40px;
 }
 
+.gradient-ai-btn {
+  right: 72px;
+  font-size: 13px;
+}
+
 .gradient-widget:hover .gradient-download,
-.gradient-widget:hover .gradient-refresh {
+.gradient-widget:hover .gradient-refresh,
+.gradient-widget:hover .gradient-ai-btn {
   opacity: 1;
 }
 
 .gradient-download:hover,
-.gradient-refresh:hover {
+.gradient-refresh:hover,
+.gradient-ai-btn:hover {
   background: rgba(0, 0, 0, 0.5);
 }
+
+.gradient-ai-error {
+  font-size: 11px;
+  color: #EF4444;
+  margin: 0 0 8px;
+}
+
+.gradient-ai-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.gradient-ai-reset:hover { color: var(--text-primary); }
+.gradient-ai-reset:disabled { cursor: default; opacity: 0.6; }
