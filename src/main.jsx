@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { recordTabOpen } from './utils/tabOpens'
+
+// Count this tab open (only when loaded inside the extension's new-tab iframe)
+recordTabOpen()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

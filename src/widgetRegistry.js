@@ -22,6 +22,9 @@ export const WIDGET_SIZES = {
   exchange:   { w: 2, h: 1 },
   countdown:  { w: 2, h: 1 },
   calculator: { w: 2, h: 3 },
+  odometer:   { w: 2, h: 1 },
+  randomsite: { w: 2, h: 1 },
+  gradient:   { w: 2, h: 2 },
 }
 
 export const WIDGET_LABELS = {
@@ -41,6 +44,9 @@ export const WIDGET_LABELS = {
   exchange:   'Exchange Rate',
   countdown:  'Countdown',
   calculator: 'Calculator',
+  odometer:   'Tab Odometer',
+  randomsite: 'Random Website',
+  gradient:   'Gradient of the Day',
 }
 
 // Registry maps widget type → React component
@@ -60,6 +66,9 @@ import BlackjackWidget      from './components/BlackjackWidget'
 import ExchangeRateWidget   from './components/ExchangeRateWidget'
 import CountdownWidget      from './components/CountdownWidget'
 import CalculatorWidget     from './components/CalculatorWidget'
+import OdometerWidget       from './components/OdometerWidget'
+import RandomSiteWidget     from './components/RandomSiteWidget'
+import MeshGradientWidget   from './components/MeshGradientWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -78,6 +87,9 @@ const registry = {
   exchange:   ExchangeRateWidget,
   countdown:  CountdownWidget,
   calculator: CalculatorWidget,
+  odometer:   OdometerWidget,
+  randomsite: RandomSiteWidget,
+  gradient:   MeshGradientWidget,
 }
 
 export function registerWidget(type, component) {
