@@ -2507,7 +2507,8 @@ body::before {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
-.gradient-download {
+.gradient-download,
+.gradient-refresh {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -2528,10 +2529,16 @@ body::before {
   padding: 0;
 }
 
-.gradient-widget:hover .gradient-download {
+.gradient-refresh {
+  right: 40px;
+}
+
+.gradient-widget:hover .gradient-download,
+.gradient-widget:hover .gradient-refresh {
   opacity: 1;
 }
 
-.gradient-download:hover {
+.gradient-download:hover,
+.gradient-refresh:hover {
   background: rgba(0, 0, 0, 0.5);
 }

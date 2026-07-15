@@ -63,8 +63,10 @@ function currentBlockKey() {
   return { block, dateStr: format(now, 'yyyy-MM-dd') }
 }
 
-function generateMesh(dateStr, block) {
-  const rand = mulberry32(hashSeed(`${dateStr}-${block}`))
+function generateMesh(dateStr, block, variant) {
+  // variant 0 keeps the original shared-seed gradient; refreshes salt the seed
+  const seed = variant === 0 ? `${dateStr}-${block}` : `${dateStr}-${block}-v${variant}`
+  const rand = mulberry32(hashSeed(seed))
   const p = PALETTES[block]
   const range = ([min, max]) => min + rand() * (max - min)
 
@@ -115,18 +117,30 @@ function drawMesh(ctx, W, H, { base, blobs }) {
 
 export default function MeshGradientWidget() {
   const [{ block, dateStr }, setKey] = useState(currentBlockKey)
+  const [variant, setVariant] = useState(0)
 
   // Roll over to the next gradient when the 6-hour block (or date) changes
   useEffect(() => {
     const id = setInterval(() => {
       const next = currentBlockKey()
-      setKey((prev) => (prev.block !== next.block || prev.dateStr !== next.dateStr ? next : prev))
+      setKey((prev) => {
+        if (prev.block !== next.block || prev.dateStr !== next.dateStr) {
+          setVariant(0)
+          return next
+        }
+        return prev
+      })
     }, 60 * 1000)
     return () => clearInterval(id)
   }, [])
 
-  const mesh = useMemo(() => generateMesh(dateStr, block), [dateStr, block])
+  const mesh = useMemo(() => generateMesh(dateStr, block, variant), [dateStr, block, variant])
   const background = useMemo(() => meshToCss(mesh), [mesh])
+
+  function handleRefresh(e) {
+    e.stopPropagation()
+    setVariant((v) => v + 1)
+  }
 
   function handleDownload(e) {
     e.stopPropagation()
@@ -139,7 +153,7 @@ export default function MeshGradientWidget() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `mesh-${block}-${dateStr}.png`
+      a.download = `mesh-${block}-${dateStr}${variant > 0 ? `-v${variant}` : ''}.png`
       a.click()
       URL.revokeObjectURL(url)
     }, 'image/png')
@@ -151,6 +165,9 @@ export default function MeshGradientWidget() {
         <span className="gradient-block">{block}</span>
         <span className="gradient-date">{dateStr}</span>
       </div>
+      <button className="gradient-refresh" onClick={handleRefresh} title="Refresh gradient">
+        ↻
+      </button>
       <button className="gradient-download" onClick={handleDownload} title="Download as 1920×1080 wallpaper">
         ↓
       </button>
