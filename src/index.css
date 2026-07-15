@@ -10,6 +10,11 @@
   --border: #E8E6E1;
   --accent: #F5C518;
   --accent-glow: rgba(245, 197, 24, 0.15);
+  --mesh:
+    radial-gradient(at 12% 15%, rgba(245, 197, 24, 0.33) 0px, transparent 55%),
+    radial-gradient(at 88% 10%, rgba(251, 146, 60, 0.33) 0px, transparent 55%),
+    radial-gradient(at 80% 90%, rgba(56, 189, 248, 0.33) 0px, transparent 55%),
+    radial-gradient(at 15% 85%, rgba(251, 146, 60, 0.23) 0px, transparent 55%);
 }
 
 :root[data-theme="dark"] {
@@ -21,6 +26,11 @@
   --border: #2E2E2E;
   --accent: #F5C518;
   --accent-glow: rgba(245, 197, 24, 0.08);
+  --mesh:
+    radial-gradient(at 12% 15%, rgba(245, 197, 24, 0.16) 0px, transparent 55%),
+    radial-gradient(at 88% 10%, rgba(251, 146, 60, 0.16) 0px, transparent 55%),
+    radial-gradient(at 80% 90%, rgba(56, 189, 248, 0.16) 0px, transparent 55%),
+    radial-gradient(at 15% 85%, rgba(251, 146, 60, 0.11) 0px, transparent 55%);
 }
 
 /* Default to light until JS sets data-theme */
@@ -33,6 +43,11 @@
   --border: #E8E6E1;
   --accent: #F5C518;
   --accent-glow: rgba(245, 197, 24, 0.15);
+  --mesh:
+    radial-gradient(at 12% 15%, rgba(245, 197, 24, 0.33) 0px, transparent 55%),
+    radial-gradient(at 88% 10%, rgba(251, 146, 60, 0.33) 0px, transparent 55%),
+    radial-gradient(at 80% 90%, rgba(56, 189, 248, 0.33) 0px, transparent 55%),
+    radial-gradient(at 15% 85%, rgba(251, 146, 60, 0.23) 0px, transparent 55%);
 }
 
 /* ── Reset & base ── */
@@ -55,18 +70,24 @@ body {
   min-width: 768px;
 }
 
-/* Background glow (top-center, diffuse) */
+/* Mesh gradient background — oversized so the slow drift never shows an edge */
 body::before {
   content: '';
   position: fixed;
-  top: -300px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 900px;
-  height: 700px;
-  background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 65%);
+  inset: -25%;
+  background: var(--mesh);
   pointer-events: none;
   z-index: 0;
+  animation: mesh-drift 50s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-drift {
+  from { transform: rotate(0deg) scale(1); }
+  to   { transform: rotate(8deg) scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
 }
 
 /* ── App layout ── */
@@ -413,6 +434,7 @@ body::before {
 
 .settings-accent-swatches {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 

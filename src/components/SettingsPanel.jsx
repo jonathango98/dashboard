@@ -59,21 +59,22 @@ export default function SettingsPanel({ onClose }) {
           <p className="settings-hint">Used in the Greeting widget.</p>
         </div>
 
-        {/* Accent color */}
+        {/* Theme */}
         <div className="settings-section">
-          <label className="settings-label">Accent color</label>
+          <label className="settings-label">Theme</label>
           <div className="settings-accent-swatches">
             {ACCENT_OPTIONS.map((opt) => (
               <button
                 key={opt.key}
                 className={`accent-swatch ${accent === opt.key ? 'active' : ''}`}
-                style={{ '--swatch-color': opt.hex }}
+                style={{ '--swatch-color': opt.gradient }}
                 onClick={() => handleAccentChange(opt.key)}
                 title={opt.label}
                 aria-label={opt.label}
               />
             ))}
           </div>
+          <p className="settings-hint">Sets the accent and the background wash.</p>
         </div>
 
         {/* Color mode */}
