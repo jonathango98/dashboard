@@ -66,6 +66,46 @@ function currentBlockKey() {
   return { block, dateStr: format(now, 'yyyy-MM-dd') }
 }
 
+// Place blobs on jittered cells of a 3x3 grid instead of uniformly at random:
+// coverage stays even (no clumps, no bald corners). Cells are then ordered by
+// angle around the center and colors by hue, so spatially adjacent blobs get
+// analogous hues — overlapping far-apart hues is what averages into gray mud
+// when the browser composites in sRGB. Painting runs dark to light so the
+// brightest color reads as a light source instead of being buried.
+function layoutBlobs(rand, colors) {
+  const cells = []
+  for (const cx of [0.16, 0.5, 0.84]) {
+    for (const cy of [0.16, 0.5, 0.84]) cells.push({ cx, cy })
+  }
+  for (let i = cells.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[cells[i], cells[j]] = [cells[j], cells[i]]
+  }
+
+  const picked = cells
+    .slice(0, BLOB_COUNT)
+    .sort((a, b) => Math.atan2(a.cy - 0.5, a.cx - 0.5) - Math.atan2(b.cy - 0.5, b.cx - 0.5))
+
+  const byHue = [...colors].sort((a, b) => a.h - b.h)
+  const brightest = Math.max(...colors.map((c) => c.l))
+
+  return picked
+    .map((cell, i) => {
+      const color = byHue[i % byHue.length]
+      const focal = color.l === brightest
+      return {
+        x: cell.cx - 0.16 + rand() * 0.32,
+        y: cell.cy - 0.16 + rand() * 0.32,
+        // brightest color stays a small, intense glow; the rest are broad washes
+        f: focal ? 0.35 + rand() * 0.15 : 0.55 + rand() * 0.3,
+        ratio: 0.7 + rand() * 0.6, // ellipse aspect, for organic shapes
+        a: focal ? 0.85 + rand() * 0.1 : 0.7 + rand() * 0.15,
+        color,
+      }
+    })
+    .sort((a, b) => a.color.l - b.color.l)
+}
+
 function generateMesh(dateStr, block, variant) {
   // variant 0 keeps the original shared-seed gradient; refreshes salt the seed
   const seed = variant === 0 ? `${dateStr}-${block}` : `${dateStr}-${block}-v${variant}`
@@ -76,19 +116,13 @@ function generateMesh(dateStr, block, variant) {
   const baseHueRange = p.hues[Math.floor(rand() * p.hues.length)]
   const base = { h: Math.round(range(baseHueRange)), s: Math.round(range(p.sat) * 0.6), l: p.baseLight }
 
-  const blobs = Array.from({ length: BLOB_COUNT }, (_, i) => ({
-    x: -0.15 + rand() * 1.3,
-    y: -0.15 + rand() * 1.3,
-    f: 0.45 + rand() * 0.4, // radius as a fraction of each axis
-    a: 0.75 + rand() * 0.2,
-    color: {
-      h: Math.round(range(p.hues[i % p.hues.length])),
-      s: Math.round(range(p.sat)),
-      l: Math.round(range(p.light)),
-    },
+  const colors = p.hues.map((hueRange) => ({
+    h: Math.round(range(hueRange)),
+    s: Math.round(range(p.sat)),
+    l: Math.round(range(p.light)),
   }))
 
-  return { base, blobs }
+  return { base, blobs: layoutBlobs(rand, colors) }
 }
 
 function hexToHsl(hex) {
@@ -119,50 +153,96 @@ function generateMeshFromColors(colors, seedStr) {
   const rand = mulberry32(hashSeed(seedStr))
   const hsls = colors.map(hexToHsl)
 
-  const blobs = Array.from({ length: BLOB_COUNT }, (_, i) => ({
-    x: -0.15 + rand() * 1.3,
-    y: -0.15 + rand() * 1.3,
-    f: 0.45 + rand() * 0.4,
-    a: 0.75 + rand() * 0.2,
-    color: hsls[i % hsls.length],
-  }))
-
-  const avgL = hsls.reduce((sum, c) => sum + c.l, 0) / hsls.length
-  const avgS = hsls.reduce((sum, c) => sum + c.s, 0) / hsls.length
+  // Anchor the base to the darkest palette color (slightly deepened) rather
+  // than an average — averages of 4 hues drift toward muddy gray, and a deep
+  // base is what makes the lighter washes glow against it.
+  const darkest = [...hsls].sort((a, b) => a.l - b.l)[0]
   const base = {
-    h: hsls[0].h,
-    s: Math.round(avgS * 0.6),
-    l: Math.round(Math.min(90, Math.max(8, avgL * 0.4))),
+    h: darkest.h,
+    s: Math.round(darkest.s * 0.75),
+    l: Math.round(Math.min(82, Math.max(6, darkest.l * 0.75))),
   }
 
-  return { base, blobs }
+  return { base, blobs: layoutBlobs(rand, hsls) }
+}
+
+// Fine monochrome grain blended over the gradient hides the banding that
+// smooth radial fades produce on low-contrast stretches (the same trick
+// designers use in Figma: noise at low opacity over every mesh gradient).
+const NOISE_LAYER = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E")`
+
+// Blob falloff eases through a mid stop and fades over the full radius —
+// a rough gaussian, so wash edges never read as hard rings.
+function blobStops(b) {
+  return `${hsla(b.color, b.a)} 0%, ${hsla(b.color, b.a * 0.5)} 45%, ${hsla(b.color, 0)} 100%`
+}
+
+// Grain sits on its own unblurred layer above the mesh (see .gradient-grain)
+const GRAIN_STYLE = {
+  backgroundImage: NOISE_LAYER,
+  backgroundSize: '160px 160px',
 }
 
 // CSS paints the first layer on top; canvas paints in draw order —
 // keep both renderers visually identical by reversing here.
 function meshToCss({ base, blobs }) {
   const layers = [...blobs].reverse().map((b) =>
-    `radial-gradient(ellipse ${Math.round(b.f * 100)}% ${Math.round(b.f * 100)}% at ${Math.round(b.x * 100)}% ${Math.round(b.y * 100)}%, ${hsla(b.color, b.a)} 0%, ${hsla(b.color, 0)} 70%)`
+    `radial-gradient(ellipse ${Math.round(b.f * 100)}% ${Math.round(b.f * b.ratio * 100)}% at ${Math.round(b.x * 100)}% ${Math.round(b.y * 100)}%, ${blobStops(b)})`
   )
   layers.push(`linear-gradient(${hsla(base, 1)}, ${hsla(base, 1)})`)
-  return layers.join(', ')
+  return { backgroundImage: layers.join(', ') }
 }
 
 function drawMesh(ctx, W, H, { base, blobs }) {
-  ctx.fillStyle = hsla(base, 1)
-  ctx.fillRect(0, 0, W, H)
+  // Composite base + blobs into an oversized buffer, then draw it back
+  // through a global blur — the blur is what actually mixes neighboring
+  // colors; alpha falloff alone always leaves visible blob contours. The
+  // bleed margin keeps the blur from fading toward transparent at the edges.
+  const M = Math.round(Math.min(W, H) * 0.12)
+  const off = document.createElement('canvas')
+  off.width = W + M * 2
+  off.height = H + M * 2
+  const octx = off.getContext('2d')
+
+  octx.fillStyle = hsla(base, 1)
+  octx.fillRect(0, 0, off.width, off.height)
   for (const b of blobs) {
-    ctx.save()
-    ctx.translate(b.x * W, b.y * H)
-    ctx.scale(b.f * W, b.f * H)
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1)
+    octx.save()
+    octx.translate(M + b.x * W, M + b.y * H)
+    octx.scale(b.f * W, b.f * b.ratio * H)
+    const g = octx.createRadialGradient(0, 0, 0, 0, 0, 1)
     g.addColorStop(0, hsla(b.color, b.a))
-    g.addColorStop(0.7, hsla(b.color, 0))
+    g.addColorStop(0.45, hsla(b.color, b.a * 0.5))
     g.addColorStop(1, hsla(b.color, 0))
-    ctx.fillStyle = g
-    ctx.fillRect(-1, -1, 2, 2)
-    ctx.restore()
+    octx.fillStyle = g
+    octx.fillRect(-1.5, -1.5, 3, 3)
+    octx.restore()
   }
+
+  ctx.save()
+  ctx.filter = `blur(${Math.round(Math.min(W, H) * 0.055)}px) saturate(1.15)`
+  ctx.drawImage(off, -M, -M)
+  ctx.restore()
+
+  // Match the CSS grain layer so downloads look like the widget
+  const noise = document.createElement('canvas')
+  noise.width = 160
+  noise.height = 160
+  const nctx = noise.getContext('2d')
+  const img = nctx.createImageData(160, 160)
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.floor(Math.random() * 256)
+    img.data[i] = v
+    img.data[i + 1] = v
+    img.data[i + 2] = v
+    img.data[i + 3] = 102 // ~0.4 alpha, same as the SVG grain
+  }
+  nctx.putImageData(img, 0, 0)
+  ctx.save()
+  ctx.globalCompositeOperation = 'soft-light'
+  ctx.fillStyle = ctx.createPattern(noise, 'repeat')
+  ctx.fillRect(0, 0, W, H)
+  ctx.restore()
 }
 
 export default function MeshGradientWidget({ instanceId }) {
@@ -204,7 +284,7 @@ export default function MeshGradientWidget({ instanceId }) {
     }
     return generateMesh(dateStr, block, variant)
   }, [ai, aiVariant, dateStr, block, variant, instanceId])
-  const background = useMemo(() => meshToCss(mesh), [mesh])
+  const backgroundStyle = useMemo(() => meshToCss(mesh), [mesh])
 
   function handleRefresh(e) {
     e.stopPropagation()
@@ -267,7 +347,9 @@ export default function MeshGradientWidget({ instanceId }) {
   }
 
   return (
-    <div className="gradient-widget" style={{ background }} ref={anchorRef}>
+    <div className="gradient-widget" ref={anchorRef}>
+      <div className="gradient-mesh" style={backgroundStyle} />
+      <div className="gradient-grain" style={GRAIN_STYLE} />
       <div className="gradient-overlay">
         {ai ? (
           <>

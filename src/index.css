@@ -2481,6 +2481,23 @@ body::before {
   overflow: hidden;
 }
 
+/* Oversized + blurred so blob colors genuinely mix instead of reading as
+   stacked translucent circles; the bleed hides the blur's soft edge. */
+.gradient-mesh {
+  position: absolute;
+  inset: -15%;
+  filter: blur(42px) saturate(1.15);
+  pointer-events: none;
+}
+
+/* Grain stays crisp above the blur to mask banding */
+.gradient-grain {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
 .gradient-overlay {
   position: absolute;
   left: 14px;
