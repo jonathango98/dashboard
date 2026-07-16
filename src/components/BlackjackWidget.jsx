@@ -29,15 +29,29 @@ function Card({ card, hidden }) {
   const red = card?.s === '♥' || card?.s === '♦'
   return (
     <div style={{
-      width: 32, height: 46, borderRadius: 4, flexShrink: 0,
+      width: 28, height: 40, borderRadius: 4, flexShrink: 0,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       background: hidden ? 'var(--border)' : 'var(--bg-card)',
       border: `1px solid var(--border)`,
       color: hidden ? 'transparent' : (red ? '#EF4444' : 'var(--text-primary)'),
-      fontSize: hidden ? 15 : 11, fontWeight: 700,
+      fontSize: hidden ? 13 : 10, fontWeight: 700,
       fontFamily: 'DM Mono, monospace', lineHeight: 1.1,
     }}>
       {hidden ? '?' : <><span>{card.v}</span><span>{card.s}</span></>}
+    </div>
+  )
+}
+
+// Cards overlap once the hand grows, so a hand never wraps or overflows the cell
+function Hand({ cards, hideFirst }) {
+  const overlap = cards.length > 5 ? -14 : 3
+  return (
+    <div style={{ display: 'flex' }}>
+      {cards.map((c, i) => (
+        <div key={i} style={{ marginLeft: i === 0 ? 0 : overlap }}>
+          <Card card={c} hidden={hideFirst && i === 0} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -126,8 +140,8 @@ export default function BlackjackWidget() {
   return (
     <div style={{
       width: '100%', height: '100%', borderRadius: 'inherit', boxSizing: 'border-box',
-      background: 'var(--bg-card)', padding: '10px 10px 8px',
-      display: 'flex', flexDirection: 'column', gap: 6,
+      background: 'var(--bg-card)', padding: '8px 10px', overflow: 'hidden',
+      display: 'flex', flexDirection: 'column', gap: 4,
       fontFamily: 'Plus Jakarta Sans, sans-serif', color: 'var(--text-primary)',
     }}>
       {/* Header */}
@@ -145,26 +159,18 @@ export default function BlackjackWidget() {
       {/* Dealer hand */}
       {phase !== 'idle' && (
         <div>
-          <div style={{ fontSize: 9, opacity: 0.5, marginBottom: 3 }}>
+          <div style={{ fontSize: 9, opacity: 0.5, marginBottom: 2 }}>
             DEALER {showDealerFull ? `— ${total(dealer)}` : ''}
           </div>
-          <div style={{ display: 'flex', gap: 3 }}>
-            {dealer.map((c, i) => (
-              <Card key={i} card={c} hidden={!showDealerFull && i === 0} />
-            ))}
-          </div>
+          <Hand cards={dealer} hideFirst={!showDealerFull} />
         </div>
       )}
 
       {/* Player hand */}
       {phase !== 'idle' && (
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 9, opacity: 0.5, marginBottom: 3 }}>YOU — {total(player)}</div>
-          <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-            {player.map((c, i) => (
-              <Card key={i} card={c} />
-            ))}
-          </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <div style={{ fontSize: 9, opacity: 0.5, marginBottom: 2 }}>YOU — {total(player)}</div>
+          <Hand cards={player} />
         </div>
       )}
 
