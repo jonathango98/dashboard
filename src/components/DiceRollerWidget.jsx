@@ -3,7 +3,7 @@ import storage from '../storage'
 import './DiceRollerWidget.css'
 
 const STORAGE_KEY = 'dice-widget'
-const DIE_TYPES = [4, 6, 8, 12, 20, 'coin']
+const DIE_TYPES = [6, 20, 'coin']
 const ROLL_MS = 600
 const FLIP_MS = 700
 
