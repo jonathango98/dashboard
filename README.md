@@ -96,4 +96,4 @@ The `extension/` directory contains a Manifest v3 Chrome extension that override
 
 ## Deployment
 
-Deployed on [Netlify](https://netlify.com). Build command: `npm run build`, publish directory: `dist/`. Live at [jogo-dashboard.netlify.app](https://jogo-dashboard.netlify.app).
+Deployed on [Netlify](https://netlify.com). Build command: `npm run build`, publish directory: `dist/`. Live at [dashboard.jonathango.xyz](https://dashboard.jonathango.xyz) (Netlify site: jogo-dashboard.netlify.app).
