@@ -40,9 +40,8 @@ function formatTemp(f, unit) {
 
 function abbreviateCity(city) {
   if (!city) return ''
-  // Return first word or abbreviation for long names
-  const parts = city.split(/[\s,]+/)
-  return parts[0]
+  // Keep the full city name, dropping only a ", State/Country" suffix
+  return city.split(',')[0].trim()
 }
 
 export default function WeatherWidget({ instanceId }) {
@@ -192,7 +191,7 @@ export default function WeatherWidget({ instanceId }) {
       <button
         className="weather-city-compact"
         onClick={() => setLocating(true)}
-        title="Change location"
+        title={`${data.city} — click to change location`}
       >
         {cityShort}
       </button>

@@ -897,6 +897,8 @@ body::before {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
 }
 .weather-city-compact:hover { color: var(--text-primary); }
 
