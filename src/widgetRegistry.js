@@ -22,6 +22,10 @@ export const WIDGET_SIZES = {
   odometer:   { w: 2, h: 1 },
   randomsite: { w: 2, h: 1 },
   gradient:   { w: 2, h: 2 },
+  dice:       { w: 1, h: 2 },
+  coin:       { w: 1, h: 1 },
+  sysgauge:   { w: 1, h: 1 },
+  sunarc:     { w: 3, h: 1 },
 }
 
 export const WIDGET_LABELS = {
@@ -41,6 +45,10 @@ export const WIDGET_LABELS = {
   odometer:   'Tab Odometer',
   randomsite: 'Random Website',
   gradient:   'Gradient of the Day',
+  dice:       'Dice Roller',
+  coin:       'Coin Toss',
+  sysgauge:   'System Gauge',
+  sunarc:     'Sun Arc',
 }
 
 // Registry maps widget type → React component
@@ -60,6 +68,10 @@ import CalculatorWidget     from './components/CalculatorWidget'
 import OdometerWidget       from './components/OdometerWidget'
 import RandomSiteWidget     from './components/RandomSiteWidget'
 import MeshGradientWidget   from './components/MeshGradientWidget'
+import DiceRollerWidget     from './components/DiceRollerWidget'
+import CoinTossWidget       from './components/CoinTossWidget'
+import SystemGaugeWidget    from './components/SystemGaugeWidget'
+import SunArcWidget         from './components/SunArcWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -78,6 +90,10 @@ const registry = {
   odometer:   OdometerWidget,
   randomsite: RandomSiteWidget,
   gradient:   MeshGradientWidget,
+  dice:       DiceRollerWidget,
+  coin:       CoinTossWidget,
+  sysgauge:   SystemGaugeWidget,
+  sunarc:     SunArcWidget,
 }
 
 export function registerWidget(type, component) {
