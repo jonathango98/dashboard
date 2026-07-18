@@ -84,13 +84,12 @@ function GridBackground({ rowHeight, width }) {
   )
 }
 
-function WidgetWrapper({ instance, isEditMode }) {
+function WidgetWrapper({ instance }) {
   const Component = getWidgetComponent(instance.type)
   const label = WIDGET_LABELS[instance.type] || instance.type
   if (!Component) {
     return (
       <div className="widget-card placeholder-widget">
-        {isEditMode && <div className="widget-edit-overlay" />}
         <span className="placeholder-label">{label}</span>
         <span className="placeholder-size">{instance.w}×{instance.h}</span>
       </div>
@@ -98,7 +97,6 @@ function WidgetWrapper({ instance, isEditMode }) {
   }
   return (
     <div className="widget-card">
-      {isEditMode && <div className="widget-edit-overlay" />}
       <Component instanceId={instance.instanceId} />
     </div>
   )
@@ -166,7 +164,7 @@ export default function WidgetCanvas({ layout, isEditMode, onLayoutChange, onRem
                     ✕
                   </button>
                 )}
-                <WidgetWrapper instance={instance} isEditMode={isEditMode} />
+                <WidgetWrapper instance={instance} />
               </div>
             ))}
           </GridLayout>

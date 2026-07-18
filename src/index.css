@@ -237,22 +237,11 @@ body::before {
 
 .widget-drag-handle {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 28px;
+  inset: 0;
   cursor: grab;
   z-index: 10;
 }
 .widget-drag-handle:active { cursor: grabbing; }
-
-.widget-edit-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  border-radius: inherit;
-  cursor: grab;
-}
 
 .widget-remove-btn {
   position: absolute;
