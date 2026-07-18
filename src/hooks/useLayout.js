@@ -15,11 +15,14 @@ const DEFAULT_LAYOUT = [
 function loadLayout() {
   const saved = storage.get(STORAGE_KEY)
   if (!saved) return DEFAULT_LAYOUT
-  // Re-apply current WIDGET_SIZES so stale saved layouts stay correct
-  return saved.map((item) => ({
-    ...item,
-    ...(WIDGET_SIZES[item.type] || {}),
-  }))
+  // Drop widget types that no longer exist, then re-apply current
+  // WIDGET_SIZES so stale saved layouts stay correct
+  return saved
+    .filter((item) => WIDGET_SIZES[item.type])
+    .map((item) => ({
+      ...item,
+      ...WIDGET_SIZES[item.type],
+    }))
 }
 
 let instanceCounters = {}

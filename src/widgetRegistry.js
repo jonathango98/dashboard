@@ -23,7 +23,6 @@ export const WIDGET_SIZES = {
   randomsite: { w: 2, h: 1 },
   gradient:   { w: 2, h: 2 },
   dice:       { w: 1, h: 2 },
-  coin:       { w: 1, h: 1 },
   sysgauge:   { w: 1, h: 1 },
   sunarc:     { w: 3, h: 1 },
 }
@@ -46,7 +45,6 @@ export const WIDGET_LABELS = {
   randomsite: 'Random Website',
   gradient:   'Gradient of the Day',
   dice:       'Dice Roller',
-  coin:       'Coin Toss',
   sysgauge:   'System Gauge',
   sunarc:     'Sun Arc',
 }
@@ -69,7 +67,6 @@ import OdometerWidget       from './components/OdometerWidget'
 import RandomSiteWidget     from './components/RandomSiteWidget'
 import MeshGradientWidget   from './components/MeshGradientWidget'
 import DiceRollerWidget     from './components/DiceRollerWidget'
-import CoinTossWidget       from './components/CoinTossWidget'
 import SystemGaugeWidget    from './components/SystemGaugeWidget'
 import SunArcWidget         from './components/SunArcWidget'
 
@@ -91,7 +88,6 @@ const registry = {
   randomsite: RandomSiteWidget,
   gradient:   MeshGradientWidget,
   dice:       DiceRollerWidget,
-  coin:       CoinTossWidget,
   sysgauge:   SystemGaugeWidget,
   sunarc:     SunArcWidget,
 }
