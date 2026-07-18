@@ -13,10 +13,7 @@ export const WIDGET_SIZES = {
   timer:     { w: 3, h: 2 },
   bible:     { w: 3, h: 2 },
   sticky:    { w: 3, h: 3 },
-  tasks:     { w: 8, h: 2 },
   link:      { w: 1, h: 1 },
-  fidget:    { w: 2, h: 2 },
-  dvd:       { w: 2, h: 2 },
   snorlax:   { w: 2, h: 2 },
   blackjack:  { w: 2, h: 2 },
   exchange:   { w: 2, h: 1 },
@@ -35,11 +32,8 @@ export const WIDGET_LABELS = {
   timer:    'Timer',
   bible:    'Bible Verse',
   sticky:   'Sticky Note',
-  tasks:    'Task Board',
   link:     'Link Button',
-  fidget:   'Fidget Toy',
-  dvd:      'DVD',
-  snorlax:   'Pet',
+  snorlax:  'Virtual Pet',
   blackjack:  'Blackjack',
   exchange:   'Exchange Rate',
   countdown:  'Countdown',
@@ -57,11 +51,8 @@ import WeatherWidget     from './components/WeatherWidget'
 import DriveWidget       from './components/DriveWidget'
 import BibleVerseWidget  from './components/BibleVerseWidget'
 import StickyNoteWidget  from './components/StickyNoteWidget'
-import TaskBoardWidget   from './components/tasks/TaskBoardWidget'
 import LinkWidget        from './components/LinkWidget'
-import FidgetWidget      from './components/VirtualPetWidget'
-import DvdWidget         from './components/DvdWidget'
-import SnorlaxWidget     from './components/SnorlaxWidget'
+import VirtualPetWidget  from './components/VirtualPetWidget'
 import BlackjackWidget      from './components/BlackjackWidget'
 import ExchangeRateWidget   from './components/ExchangeRateWidget'
 import CountdownWidget      from './components/CountdownWidget'
@@ -78,11 +69,8 @@ const registry = {
   drive:    DriveWidget,
   bible:    BibleVerseWidget,
   sticky:   StickyNoteWidget,
-  tasks:    TaskBoardWidget,
   link:     LinkWidget,
-  fidget:   FidgetWidget,
-  dvd:      DvdWidget,
-  snorlax:   SnorlaxWidget,
+  snorlax:  VirtualPetWidget,
   blackjack:  BlackjackWidget,
   exchange:   ExchangeRateWidget,
   countdown:  CountdownWidget,
