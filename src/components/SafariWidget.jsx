@@ -189,10 +189,7 @@ export default function SafariWidget() {
                 #{String(wild.id).padStart(4, '0')}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button className={cancel} onClick={doCatch} style={btn('var(--accent)', '#111', 2)}>Catch</button>
-              <button className={cancel} onClick={nextEncounter} style={btn('var(--border)', 'var(--text-primary)', 1)}>Run</button>
-            </div>
+            <button className={cancel} onClick={doCatch} style={btn('var(--accent)', '#111')}>Catch</button>
           </>
         )}
 
