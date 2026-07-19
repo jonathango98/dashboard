@@ -25,6 +25,7 @@ export const WIDGET_SIZES = {
   dice:       { w: 1, h: 2 },
   sysgauge:   { w: 1, h: 1 },
   sunarc:     { w: 3, h: 1 },
+  safari:     { w: 3, h: 2 },
 }
 
 export const WIDGET_LABELS = {
@@ -47,6 +48,7 @@ export const WIDGET_LABELS = {
   dice:       'Dice Roller',
   sysgauge:   'System Gauge',
   sunarc:     'Sun Arc',
+  safari:     'Safari Zone',
 }
 
 // Registry maps widget type → React component
@@ -69,6 +71,7 @@ import MeshGradientWidget   from './components/MeshGradientWidget'
 import DiceRollerWidget     from './components/DiceRollerWidget'
 import SystemGaugeWidget    from './components/SystemGaugeWidget'
 import SunArcWidget         from './components/SunArcWidget'
+import SafariWidget         from './components/SafariWidget'
 
 const registry = {
   greeting: GreetingWidget,
@@ -90,6 +93,7 @@ const registry = {
   dice:       DiceRollerWidget,
   sysgauge:   SystemGaugeWidget,
   sunarc:     SunArcWidget,
+  safari:     SafariWidget,
 }
 
 export function registerWidget(type, component) {
