@@ -123,8 +123,9 @@ export default function CalculatorWidget() {
                 ['+', '-', '*', '/'].includes(btn) ? ' calc-btn-op' :
                 btn === 'C' ? ' calc-btn-clear' : ''
               }`}
-              onMouseDown={e => { e.preventDefault(); press(btn) }}
-              tabIndex={-1}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => press(btn)}
+              aria-label={btn === '⌫' ? 'Backspace' : btn === '±' ? 'Toggle sign' : undefined}
             >
               {btn === '*' ? '×' : btn === '/' ? '÷' : btn}
             </button>
