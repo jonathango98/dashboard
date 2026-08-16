@@ -170,6 +170,7 @@ export default function WeatherWidget({ instanceId }) {
             onChange={(e) => { setLocSearch(e.target.value); setLocError(null) }}
             onKeyDown={(e) => e.key === 'Escape' && (setLocating(false), setLocSearch(''), setLocError(null))}
             placeholder="Search city…"
+            aria-label="Search for a city"
           />
           {locError && <span className="weather-location-error">{locError}</span>}
         </form>

@@ -348,10 +348,11 @@ export default function TimerWidget({ instanceId }) {
             <div className="timer-label-row">
               <input
                 className="timer-label-input"
-                placeholder="Label"
+                placeholder="e.g. Tea steeping…"
                 value={cd.label}
                 onChange={(e) => setCd((prev) => ({ ...prev, label: e.target.value }))}
                 maxLength={30}
+                aria-label="Timer label"
               />
             </div>
           )}
@@ -366,7 +367,7 @@ export default function TimerWidget({ instanceId }) {
                 {!isPomodoro && cd.done ? 'Restart' : '▶ Start'}
               </button>
             )}
-            <button className="timer-btn" onClick={isPomodoro ? pomoReset : cdReset} title="Reset">↺</button>
+            <button className="timer-btn" onClick={isPomodoro ? pomoReset : cdReset} title="Reset" aria-label="Reset">↺</button>
           </div>
         </div>
       </div>

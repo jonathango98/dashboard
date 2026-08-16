@@ -65,7 +65,7 @@ export default function LinkWidget({ instanceId }) {
             if (e.key === 'Escape' && config.url) setEditing(false)
           }}
           onBlur={commitEdit}
-          placeholder="https://..."
+          placeholder="https://…"
           autoFocus
         />
       </div>
@@ -80,6 +80,7 @@ export default function LinkWidget({ instanceId }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => !config.url && e.preventDefault()}
+        aria-label={config.label || config.url}
       >
         {faviconUrl ? (
           <img
@@ -96,6 +97,7 @@ export default function LinkWidget({ instanceId }) {
         className="link-widget-edit-btn react-grid-layout-cancel"
         onClick={startEdit}
         title="Edit link"
+        aria-label="Edit link"
       >
         ✎
       </button>

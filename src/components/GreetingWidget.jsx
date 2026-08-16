@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { format } from 'date-fns'
 import storage from '../storage'
 
 function getGreeting() {
@@ -55,7 +54,7 @@ export default function GreetingWidget() {
     if (e.key === 'Escape') setEditing(false)
   }
 
-  const dateStr = format(now, 'EEEE, MMMM d')
+  const dateStr = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(now)
 
   return (
     <div className="greeting-widget">
@@ -74,6 +73,7 @@ export default function GreetingWidget() {
               onKeyDown={handleKeyDown}
               autoFocus
               maxLength={40}
+              aria-label="Your name"
             />
           ) : (
             <button className="greeting-name-btn" onClick={startEdit} title="Click to edit your name">

@@ -120,6 +120,7 @@ export default function VirtualPetWidget({ instanceId }) {
             <button
               key={n}
               onClick={() => pickChar(n)}
+              aria-label={`Select character ${n}`}
               style={{
                 width: 22, height: 22, borderRadius: 4, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600,
                 background: char === n ? 'var(--accent)' : 'var(--bg-card)',
