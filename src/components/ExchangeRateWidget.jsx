@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { api } from '../api'
 import storage from '../storage'
@@ -27,6 +27,8 @@ function EditPopover({ anchor, config, onSave, onCancel }) {
   const [from, setFrom] = useState(config.from)
   const [to, setTo] = useState(config.to)
   const rect = anchor.getBoundingClientRect()
+  const fromId = useId()
+  const toId = useId()
 
   const style = {
     position: 'fixed',
@@ -45,12 +47,12 @@ function EditPopover({ anchor, config, onSave, onCancel }) {
   return createPortal(
     <div className="drive-popover" style={style}>
       <form onSubmit={handleSave}>
-        <label className="drive-popover-label">From</label>
-        <select className="exchange-select" value={from} onChange={(e) => setFrom(e.target.value)}>
+        <label className="drive-popover-label" htmlFor={fromId}>From</label>
+        <select id={fromId} className="exchange-select" value={from} onChange={(e) => setFrom(e.target.value)}>
           {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <label className="drive-popover-label" style={{ marginTop: 8 }}>To</label>
-        <select className="exchange-select" value={to} onChange={(e) => setTo(e.target.value)}>
+        <label className="drive-popover-label" htmlFor={toId} style={{ marginTop: 8 }}>To</label>
+        <select id={toId} className="exchange-select" value={to} onChange={(e) => setTo(e.target.value)}>
           {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         {from === to && (
@@ -144,7 +146,16 @@ export default function ExchangeRateWidget({ instanceId }) {
         <div
           className="exchange-widget"
           ref={anchorRef}
+          role="button"
+          tabIndex={0}
           onClick={() => !showEdit && setShowEdit(true)}
+          onKeyDown={(e) => {
+            if (e.target !== e.currentTarget) return
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              if (!showEdit) setShowEdit(true)
+            }
+          }}
           title="Click to change currencies"
         >
           <span className="exchange-currency exchange-from">{config.from}</span>
@@ -153,9 +164,11 @@ export default function ExchangeRateWidget({ instanceId }) {
           </span>
           <span className="exchange-currency exchange-to">{config.to}</span>
           <button
+            type="button"
             className="exchange-refresh"
             onClick={(e) => { e.stopPropagation(); fetchRate(config.from, config.to, true) }}
             title="Refresh"
+            aria-label="Refresh rate"
             disabled={loading}
           >
             ↻
@@ -179,20 +192,24 @@ export default function ExchangeRateWidget({ instanceId }) {
               step="any"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="Amount"
+              placeholder="e.g. 100…"
+              aria-label="Amount"
             />
             <select
               className="exchange-select exchange-calc-select"
               value={config.from}
               onChange={(e) => handleSave({ ...config, from: e.target.value })}
+              aria-label="From currency"
             >
               {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <button
+            type="button"
             className="exchange-calc-swap"
             onClick={handleSwap}
             title="Swap currencies"
+            aria-label="Swap currencies"
             disabled={loading}
           >
             ⇄
@@ -205,6 +222,7 @@ export default function ExchangeRateWidget({ instanceId }) {
               className="exchange-select exchange-calc-select"
               value={config.to}
               onChange={(e) => handleSave({ ...config, to: e.target.value })}
+              aria-label="To currency"
             >
               {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>

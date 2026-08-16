@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId } from 'react'
 import { createPortal } from 'react-dom'
 import storage from '../storage'
 
@@ -20,6 +20,8 @@ function EditPopover({ anchor, config, onSave, onCancel }) {
   const [label, setLabel] = useState(config.label || '')
   const [date, setDate] = useState(config.date || '')
   const rect = anchor.getBoundingClientRect()
+  const labelId = useId()
+  const dateId = useId()
 
   const style = {
     position: 'fixed',
@@ -38,8 +40,9 @@ function EditPopover({ anchor, config, onSave, onCancel }) {
   return createPortal(
     <div className="drive-popover" style={style}>
       <form onSubmit={handleSave}>
-        <label className="drive-popover-label">Label</label>
+        <label className="drive-popover-label" htmlFor={labelId}>Label</label>
         <input
+          id={labelId}
           className="drive-popover-input"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
@@ -47,8 +50,9 @@ function EditPopover({ anchor, config, onSave, onCancel }) {
           maxLength={40}
           autoFocus
         />
-        <label className="drive-popover-label">Date</label>
+        <label className="drive-popover-label" htmlFor={dateId}>Date</label>
         <input
+          id={dateId}
           className="drive-popover-input"
           type="date"
           value={date}

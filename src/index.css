@@ -1726,7 +1726,7 @@ body::before {
   outline: none;
   cursor: pointer;
 }
-.exchange-select:focus { border-color: var(--accent); }
+.exchange-select:focus-visible { border-color: var(--accent); }
 
 .exchange-calc {
   flex: 1;
@@ -1756,7 +1756,7 @@ body::before {
   font-size: 14px;
   outline: none;
 }
-.exchange-calc-input:focus { border-color: var(--accent); }
+.exchange-calc-input:focus-visible { border-color: var(--accent); }
 .exchange-calc-input::-webkit-outer-spin-button,
 .exchange-calc-input::-webkit-inner-spin-button {
   -webkit-appearance: none;

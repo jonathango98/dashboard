@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { api } from '../api'
 import storage from '../storage'
@@ -32,6 +32,8 @@ function EditPopover({ anchor, config, onSave, onCancel }) {
   const [label, setLabel] = useState(config.label || '')
   const [address, setAddress] = useState(config.destination || '')
   const rect = anchor.getBoundingClientRect()
+  const labelId = useId()
+  const addressId = useId()
 
   const style = {
     position: 'fixed',
@@ -50,16 +52,18 @@ function EditPopover({ anchor, config, onSave, onCancel }) {
   return createPortal(
     <div className="drive-popover" style={style}>
       <form onSubmit={handleSave}>
-        <label className="drive-popover-label">Label</label>
+        <label className="drive-popover-label" htmlFor={labelId}>Label</label>
         <input
+          id={labelId}
           className="drive-popover-input"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Work, Home, Gym…"
           maxLength={30}
         />
-        <label className="drive-popover-label">Address</label>
+        <label className="drive-popover-label" htmlFor={addressId}>Address</label>
         <input
+          id={addressId}
           className="drive-popover-input"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
@@ -182,6 +186,8 @@ export default function DriveWidget({ instanceId }) {
           className="drive-traffic-dot"
           style={{ background: trafficColor }}
           title={trafficLabel}
+          role="img"
+          aria-label={trafficLabel}
         />
       )}
       <button
