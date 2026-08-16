@@ -16,7 +16,7 @@ export const WIDGET_SIZES = {
   link:      { w: 1, h: 1 },
   snorlax:   { w: 2, h: 2 },
   blackjack:  { w: 2, h: 2 },
-  exchange:   { w: 2, h: 1 },
+  exchange:   { w: 2, h: 2 },
   countdown:  { w: 2, h: 1 },
   calculator: { w: 2, h: 3 },
   odometer:   { w: 2, h: 1 },

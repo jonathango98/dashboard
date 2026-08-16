@@ -1621,12 +1621,48 @@ body::before {
 }
 
 /* ── Exchange Rate widget ── */
+.exchange-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.exchange-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px 6px;
+  flex-shrink: 0;
+}
+
+.exchange-tab {
+  padding: 3px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.exchange-tab:hover { color: var(--text-primary); }
+.exchange-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #111;
+  font-weight: 600;
+}
+
 .exchange-widget {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   padding: 0 16px;
   cursor: pointer;
   position: relative;
@@ -1691,6 +1727,91 @@ body::before {
   cursor: pointer;
 }
 .exchange-select:focus { border-color: var(--accent); }
+
+.exchange-calc {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 2px 16px 14px;
+}
+
+.exchange-calc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exchange-calc-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  color: var(--text-primary);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  outline: none;
+}
+.exchange-calc-input:focus { border-color: var(--accent); }
+.exchange-calc-input::-webkit-outer-spin-button,
+.exchange-calc-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.exchange-calc-input[type="number"] { -moz-appearance: textfield; }
+
+.exchange-calc-select {
+  width: auto;
+  min-width: 68px;
+  flex-shrink: 0;
+}
+
+.exchange-calc-output {
+  flex: 1;
+  min-width: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exchange-calc-swap {
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  padding: 0;
+  margin: -2px auto;
+  flex-shrink: 0;
+}
+.exchange-calc-swap:hover { color: var(--accent); border-color: var(--accent); }
+.exchange-calc-swap:disabled { opacity: 0.5; cursor: default; }
+
+.exchange-calc-error {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #EF4444;
+  text-align: center;
+}
 
 /* ── Countdown widget ── */
 .countdown-widget {

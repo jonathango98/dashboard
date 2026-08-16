@@ -18,6 +18,11 @@ function formatRate(rate) {
   return rate.toFixed(3)
 }
 
+function formatAmount(val) {
+  if (val === null || val === undefined || !isFinite(val)) return '—'
+  return val.toLocaleString(undefined, { maximumFractionDigits: 4 })
+}
+
 function EditPopover({ anchor, config, onSave, onCancel }) {
   const [from, setFrom] = useState(config.from)
   const [to, setTo] = useState(config.to)
@@ -70,6 +75,8 @@ export default function ExchangeRateWidget({ instanceId }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
+  const [tab, setTab] = useState('rate')
+  const [amount, setAmount] = useState('1')
   const anchorRef = useRef(null)
 
   const fetchRate = useCallback(async (from, to, force = false) => {
@@ -104,33 +111,106 @@ export default function ExchangeRateWidget({ instanceId }) {
     fetchRate(newConfig.from, newConfig.to, true)
   }
 
+  function handleSwap() {
+    handleSave({ from: config.to, to: config.from })
+  }
+
+  function selectTab(next) {
+    setShowEdit(false)
+    setTab(next)
+  }
+
+  const numericAmount = parseFloat(amount)
+  const converted = rate !== null && !isNaN(numericAmount) ? numericAmount * rate : null
+
   return (
-    <div
-      className="exchange-widget"
-      ref={anchorRef}
-      onClick={() => !showEdit && setShowEdit(true)}
-      title="Click to change currencies"
-    >
-      <span className="exchange-currency exchange-from">{config.from}</span>
-      <span className="exchange-rate">
-        {loading && rate === null ? '…' : error ? '—' : rate !== null ? formatRate(rate) : '…'}
-      </span>
-      <span className="exchange-currency exchange-to">{config.to}</span>
-      <button
-        className="exchange-refresh"
-        onClick={(e) => { e.stopPropagation(); fetchRate(config.from, config.to, true) }}
-        title="Refresh"
-        disabled={loading}
-      >
-        ↻
-      </button>
-      {showEdit && anchorRef.current && (
-        <EditPopover
-          anchor={anchorRef.current}
-          config={config}
-          onSave={handleSave}
-          onCancel={() => setShowEdit(false)}
-        />
+    <div className="exchange-container">
+      <div className="exchange-tabs">
+        <button
+          className={`exchange-tab${tab === 'rate' ? ' active' : ''}`}
+          onClick={() => selectTab('rate')}
+        >
+          Rate
+        </button>
+        <button
+          className={`exchange-tab${tab === 'calc' ? ' active' : ''}`}
+          onClick={() => selectTab('calc')}
+        >
+          Calculator
+        </button>
+      </div>
+
+      {tab === 'rate' ? (
+        <div
+          className="exchange-widget"
+          ref={anchorRef}
+          onClick={() => !showEdit && setShowEdit(true)}
+          title="Click to change currencies"
+        >
+          <span className="exchange-currency exchange-from">{config.from}</span>
+          <span className="exchange-rate">
+            {loading && rate === null ? '…' : error ? '—' : rate !== null ? formatRate(rate) : '…'}
+          </span>
+          <span className="exchange-currency exchange-to">{config.to}</span>
+          <button
+            className="exchange-refresh"
+            onClick={(e) => { e.stopPropagation(); fetchRate(config.from, config.to, true) }}
+            title="Refresh"
+            disabled={loading}
+          >
+            ↻
+          </button>
+          {showEdit && anchorRef.current && (
+            <EditPopover
+              anchor={anchorRef.current}
+              config={config}
+              onSave={handleSave}
+              onCancel={() => setShowEdit(false)}
+            />
+          )}
+        </div>
+      ) : (
+        <div className="exchange-calc">
+          <div className="exchange-calc-row">
+            <input
+              className="exchange-calc-input"
+              type="number"
+              inputMode="decimal"
+              step="any"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Amount"
+            />
+            <select
+              className="exchange-select exchange-calc-select"
+              value={config.from}
+              onChange={(e) => handleSave({ ...config, from: e.target.value })}
+            >
+              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <button
+            className="exchange-calc-swap"
+            onClick={handleSwap}
+            title="Swap currencies"
+            disabled={loading}
+          >
+            ⇄
+          </button>
+          <div className="exchange-calc-row">
+            <div className="exchange-calc-output" title={converted !== null ? String(converted) : ''}>
+              {loading ? '…' : error ? '—' : formatAmount(converted)}
+            </div>
+            <select
+              className="exchange-select exchange-calc-select"
+              value={config.to}
+              onChange={(e) => handleSave({ ...config, to: e.target.value })}
+            >
+              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          {error && <p className="exchange-calc-error">Failed to load rate</p>}
+        </div>
       )}
     </div>
   )
