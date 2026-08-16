@@ -2118,11 +2118,14 @@ body::before {
 }
 
 /* Oversized + blurred so blob colors genuinely mix instead of reading as
-   stacked translucent circles; the bleed hides the blur's soft edge. */
+   stacked translucent circles; the bleed hides the blur's soft edge.
+   The radius is set from JS as a fraction of the widget's short side (see
+   MeshGradientWidget) — a fixed radius that mixes nicely on a large card
+   smears a small one into a flat vertical ramp. */
 .gradient-mesh {
   position: absolute;
   inset: -15%;
-  filter: blur(42px) saturate(1.15);
+  filter: blur(var(--mesh-blur, 42px)) saturate(1.15);
   pointer-events: none;
 }
 
@@ -2151,6 +2154,16 @@ body::before {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+/* Palette names run longer than a block name ("morning") — cap the width so
+   a three-word name can't push past the widget or cover the buttons. */
+.gradient-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: auto;
 }
 
 .gradient-date {

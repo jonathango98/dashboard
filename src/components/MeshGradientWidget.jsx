@@ -4,38 +4,53 @@ import { format } from 'date-fns'
 import { api } from '../api'
 import storage from '../storage'
 
-// One mesh gradient per 6-hour block, deterministic from date + block,
-// so everyone gets the same "morning gradient" all morning.
+// The gradient of the day is mixed by the backend colourist (Gemini working
+// to a brief the date picks) and cached per day + 6-hour block, so every tab
+// sees the same palette all morning. Everything below is the offline
+// fallback: it follows the same brief the backend does, so a dropped request
+// still lands on today's colours instead of yesterday's.
 const BLOCKS = ['night', 'morning', 'afternoon', 'evening'] // idx = floor(hour / 6)
 
-const PALETTES = {
-  morning: {
-    hues: [[18, 45], [195, 215], [330, 350], [45, 60]],
-    sat: [65, 90],
-    light: [65, 82],
-    baseLight: 88,
-  },
-  afternoon: {
-    hues: [[200, 225], [45, 58], [165, 185], [10, 25]],
-    sat: [70, 95],
-    light: [55, 70],
-    baseLight: 78,
-  },
-  evening: {
-    hues: [[10, 35], [270, 300], [335, 355], [220, 240]],
-    sat: [60, 85],
-    light: [45, 62],
-    baseLight: 52,
-  },
-  night: {
-    hues: [[220, 250], [260, 290], [200, 220], [290, 320]],
-    sat: [40, 70],
-    light: [18, 38],
-    baseLight: 14,
-  },
+// Must match backend/routes/gradient.js — the hue anchor advances by the
+// golden angle each day, so consecutive days sit far apart on the wheel.
+// The old version had four fixed hue windows per block, which is why every
+// night gradient was the same blue-violet.
+const GOLDEN_ANGLE = 137.508
+
+// Hue offsets from the day's anchor, one scheme per harmony, in the same
+// order as the backend's list so both pick the same scheme on a given day.
+const HARMONIES = [
+  [0, 18, 38, 58],    // analogous
+  [0, 16, 164, 196],  // split-complementary
+  [0, 118, 238, 12],  // triadic
+  [0, 10, 20, 186],   // near-monochrome with one accent
+  [0, 14, 172, 188],  // complementary tension
+  [0, 30, 60, 90],    // warm-to-cool drift
+  [0, 24, 48, 200],   // muted field with a hot accent
+]
+
+// The block sets the light key only — never the hue — so the day keeps one
+// identity from dawn to midnight. Lightness is a ramp: darkest role first.
+// Only the last role is bright: two light colours side by side blur into a
+// pastel haze, while one accent over darker washes reads as a light source.
+const BLOCK_LIGHT = {
+  night:     { light: [10, 22, 36, 64], sat: [45, 78] },
+  morning:   { light: [28, 46, 62, 90], sat: [42, 74] },
+  afternoon: { light: [22, 40, 58, 88], sat: [58, 92] },
+  evening:   { light: [12, 28, 46, 80], sat: [52, 86] },
 }
 
 const BLOB_COUNT = 6
+
+function dailyBrief(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const n = Math.floor(Date.UTC(y, m - 1, d) / 86400000)
+  const mod = (v, k) => ((v % k) + k) % k
+  return {
+    anchorHue: mod(n * GOLDEN_ANGLE, 360),
+    offsets: HARMONIES[mod(n * 3, HARMONIES.length)],
+  }
+}
 
 function hashSeed(str) {
   let h = 1779033703
@@ -107,20 +122,26 @@ function layoutBlobs(rand, colors) {
 }
 
 function generateMesh(dateStr, block, variant) {
-  // variant 0 keeps the original shared-seed gradient; refreshes salt the seed
+  // variant 0 keeps the shared seed everyone sees; refreshes salt it
   const seed = variant === 0 ? `${dateStr}-${block}` : `${dateStr}-${block}-v${variant}`
   const rand = mulberry32(hashSeed(seed))
-  const p = PALETTES[block]
-  const range = ([min, max]) => min + rand() * (max - min)
+  const { anchorHue, offsets } = dailyBrief(dateStr)
+  const p = BLOCK_LIGHT[block]
 
-  const baseHueRange = p.hues[Math.floor(rand() * p.hues.length)]
-  const base = { h: Math.round(range(baseHueRange)), s: Math.round(range(p.sat) * 0.6), l: p.baseLight }
-
-  const colors = p.hues.map((hueRange) => ({
-    h: Math.round(range(hueRange)),
-    s: Math.round(range(p.sat)),
-    l: Math.round(range(p.light)),
+  const colors = offsets.map((offset, i) => ({
+    h: Math.round(((anchorHue + offset + (rand() - 0.5) * 14) % 360 + 360) % 360),
+    s: Math.round(p.sat[0] + rand() * (p.sat[1] - p.sat[0])),
+    l: Math.round(p.light[i] + (rand() - 0.5) * 6),
   }))
+
+  // Darkest role deepened — a base near the darkest colour is what makes the
+  // lighter washes read as light rather than as paint.
+  const darkest = colors[0]
+  const base = {
+    h: darkest.h,
+    s: Math.round(darkest.s * 0.7),
+    l: Math.max(5, Math.round(darkest.l * 0.62)),
+  }
 
   return { base, blobs: layoutBlobs(rand, colors) }
 }
@@ -245,6 +266,9 @@ function drawMesh(ctx, W, H, { base, blobs }) {
   ctx.restore()
 }
 
+// Shared across widget instances: the day's palette is the day's palette.
+const DAILY_KEY = 'gradient-daily-v1'
+
 export default function MeshGradientWidget({ instanceId }) {
   const storageKey = `gradient-ai-${instanceId}`
 
@@ -252,16 +276,35 @@ export default function MeshGradientWidget({ instanceId }) {
   const [variant, setVariant] = useState(0)
 
   // AI-generated palette (colors + the prompt that produced them), if any.
-  // Presence of `ai` switches the widget from the automatic time-of-day
-  // gradient to the prompt-driven one; it persists across reloads.
+  // Presence of `ai` switches the widget from the daily gradient to the
+  // prompt-driven one; it persists across reloads.
   const [ai, setAi] = useState(() => storage.get(storageKey) || null)
   const [aiVariant, setAiVariant] = useState(0)
+
+  // Today's palette from the backend colourist. Null until it arrives (or
+  // for good, if the request fails) — the local generator covers that case.
+  const [daily, setDaily] = useState(() => storage.get(DAILY_KEY) || null)
+  const [retry, setRetry] = useState(0)
 
   const [showPrompt, setShowPrompt] = useState(false)
   const [promptInput, setPromptInput] = useState(() => storage.get(storageKey)?.prompt || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const anchorRef = useRef(null)
+
+  // Keep the CSS blur proportional to the widget, the same 5.5% of the short
+  // side the canvas renderer uses — so a resized widget and a downloaded
+  // wallpaper show the same mesh rather than the same pixel radius.
+  useEffect(() => {
+    const el = anchorRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      el.style.setProperty('--mesh-blur', `${Math.round(Math.min(width, height) * 0.055)}px`)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   // Roll over to the next gradient when the 6-hour block (or date) changes
   useEffect(() => {
@@ -278,21 +321,60 @@ export default function MeshGradientWidget({ instanceId }) {
     return () => clearInterval(id)
   }, [])
 
+  // Fetch the day's palette whenever the day or block turns over. The cached
+  // copy is reused only when it was mixed for this exact date and block; a
+  // failure is silent, because the fallback gradient is a fine thing to look
+  // at and an error card is not.
+  useEffect(() => {
+    // Read the cache here rather than depending on `daily`: keeping state out
+    // of the deps is what stops a stored palette from re-triggering its own
+    // fetch, and it picks up whatever another widget instance just stored.
+    const cached = storage.get(DAILY_KEY)
+    if (cached?.date === dateStr && cached?.block === block) {
+      setDaily(cached)
+      return
+    }
+
+    let stale = false
+    api.getDailyGradient(dateStr, block)
+      .then((result) => {
+        if (stale || result?.colors?.length !== 4) return
+        // Stamp the request's own date/block so a mismatched echo can never
+        // leave the widget fetching in a loop.
+        const next = { ...result, date: dateStr, block }
+        setDaily(next)
+        storage.set(DAILY_KEY, next)
+      })
+      .catch(() => {})
+
+    return () => { stale = true }
+  }, [dateStr, block, retry])
+
+  const dailyColors =
+    daily?.date === dateStr && daily?.block === block ? daily.colors : null
+
   const mesh = useMemo(() => {
     if (ai?.colors?.length === 4) {
       return generateMeshFromColors(ai.colors, `${instanceId}-ai-${aiVariant}`)
     }
+    if (dailyColors) {
+      // variant 0 is the composition everyone shares; refresh reshuffles the
+      // layout but keeps the day's colours — they're the point.
+      return generateMeshFromColors(dailyColors, `${dateStr}-${block}-v${variant}`)
+    }
     return generateMesh(dateStr, block, variant)
-  }, [ai, aiVariant, dateStr, block, variant, instanceId])
+  }, [ai, aiVariant, dailyColors, dateStr, block, variant, instanceId])
   const backgroundStyle = useMemo(() => meshToCss(mesh), [mesh])
 
   function handleRefresh(e) {
     e.stopPropagation()
     if (ai) {
       setAiVariant((v) => v + 1)
-    } else {
-      setVariant((v) => v + 1)
+      return
     }
+    setVariant((v) => v + 1)
+    // If today's palette never arrived, a refresh is also the natural retry
+    if (!dailyColors) setRetry((r) => r + 1)
   }
 
   async function handleGenerate(e) {
@@ -334,7 +416,11 @@ export default function MeshGradientWidget({ instanceId }) {
     canvas.width = 1920
     canvas.height = 1080
     drawMesh(canvas.getContext('2d'), 1920, 1080, mesh)
-    const filenamePart = ai ? `ai-v${aiVariant}` : `${block}-${dateStr}${variant > 0 ? `-v${variant}` : ''}`
+    const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const named = dailyColors && daily?.name ? `-${slug(daily.name)}` : ''
+    const filenamePart = ai
+      ? `ai-v${aiVariant}`
+      : `${block}-${dateStr}${named}${variant > 0 ? `-v${variant}` : ''}`
     canvas.toBlob((blob) => {
       if (!blob) return
       const url = URL.createObjectURL(blob)
@@ -358,7 +444,12 @@ export default function MeshGradientWidget({ instanceId }) {
           </>
         ) : (
           <>
-            <span className="gradient-block">{block}</span>
+            <span
+              className="gradient-block gradient-name"
+              title={dailyColors && daily?.note ? daily.note : undefined}
+            >
+              {dailyColors && daily?.name ? daily.name : block}
+            </span>
             <span className="gradient-date">{dateStr}</span>
           </>
         )}

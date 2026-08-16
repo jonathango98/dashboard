@@ -29,4 +29,6 @@ export const api = {
   },
   getExchangeRate: (from, to) => request(`/api/exchange?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
   generateGradientColors: (prompt) => post('/api/gradient', { prompt }),
+  // date/block come from the client so each timezone gets its own local day
+  getDailyGradient: (date, block) => request(`/api/gradient/daily?date=${date}&block=${block}`),
 }
