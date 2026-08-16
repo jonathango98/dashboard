@@ -226,6 +226,7 @@ export default function SafariWidget() {
                   className={cancel}
                   onClick={() => swapInto(i)}
                   title={displayName(p.id, names, dex[String(p.id)])}
+                  aria-label={displayName(p.id, names, dex[String(p.id)])}
                   style={{
                     background: 'transparent', border: '1px solid var(--border)', borderRadius: 8,
                     padding: 2, cursor: 'pointer',
@@ -276,6 +277,7 @@ export default function SafariWidget() {
                       key={id}
                       className={cancel}
                       onClick={() => setDexSel(dexSel === id ? null : id)}
+                      aria-label={displayName(id, names, dex[String(id)])}
                       style={{
                         position: 'relative', background: 'transparent', cursor: 'pointer',
                         border: inParty ? '1.5px solid var(--accent)' : '1px solid var(--border)',
@@ -325,6 +327,7 @@ export default function SafariWidget() {
                     className={cancel}
                     onClick={() => setConfirmIdx(confirmIdx === i ? null : i)}
                     title={displayName(p.id, names, dex[String(p.id)])}
+                    aria-label={displayName(p.id, names, dex[String(p.id)])}
                     style={{
                       position: 'relative', width: 44, height: 44, borderRadius: 8,
                       background: 'transparent', cursor: 'pointer',

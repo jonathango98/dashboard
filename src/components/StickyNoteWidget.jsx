@@ -197,6 +197,7 @@ export default function StickyNoteWidget({ instanceId }) {
               title="Copy as WhatsApp message"
             >
               {copied ? 'Copied!' : 'Copy'}
+              <span aria-live="polite" className="sr-only">{copied ? 'Copied to clipboard' : ''}</span>
             </button>
           </div>
         )}
@@ -243,17 +244,20 @@ export default function StickyNoteWidget({ instanceId }) {
             )}
             {items.map(item => (
               <li key={item.id} className={`sticky-checklist-item${item.checked ? ' checked' : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() => handleToggle(item.id)}
-                  className="sticky-checklist-checkbox"
-                />
-                <span className="sticky-checklist-text">{item.text}</span>
+                <label className="sticky-checklist-label">
+                  <input
+                    type="checkbox"
+                    checked={item.checked}
+                    onChange={() => handleToggle(item.id)}
+                    className="sticky-checklist-checkbox"
+                  />
+                  <span className="sticky-checklist-text">{item.text}</span>
+                </label>
                 <button
                   className="sticky-checklist-delete"
                   onClick={() => handleDeleteItem(item.id)}
                   title="Remove"
+                  aria-label="Remove item"
                 >×</button>
               </li>
             ))}
@@ -266,7 +270,7 @@ export default function StickyNoteWidget({ instanceId }) {
               onChange={e => setNewItemText(e.target.value)}
               placeholder="Add an item…"
             />
-            <button type="submit" className="sticky-checklist-add" title="Add item">+</button>
+            <button type="submit" className="sticky-checklist-add" title="Add item" aria-label="Add item">+</button>
           </form>
         </div>
       )}

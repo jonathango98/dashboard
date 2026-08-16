@@ -187,3 +187,14 @@
   color: var(--accent);
   line-height: 1;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .dice-face--rolling {
+    animation: none;
+  }
+
+  .coin--flipping.coin--heads,
+  .coin--flipping.coin--tails {
+    animation: none;
+  }
+}

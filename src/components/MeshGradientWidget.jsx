@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { format } from 'date-fns'
 import { api } from '../api'
@@ -367,13 +367,24 @@ export default function MeshGradientWidget({ instanceId }) {
         className="gradient-ai-btn"
         onClick={(e) => { e.stopPropagation(); setShowPrompt((v) => !v) }}
         title="Generate colors from a text prompt"
+        aria-label="Generate colors from a text prompt"
       >
         ✨
       </button>
-      <button className="gradient-refresh" onClick={handleRefresh} title="Refresh gradient">
+      <button
+        className="gradient-refresh"
+        onClick={handleRefresh}
+        title="Refresh gradient"
+        aria-label="Refresh gradient"
+      >
         ↻
       </button>
-      <button className="gradient-download" onClick={handleDownload} title="Download as 1920×1080 wallpaper">
+      <button
+        className="gradient-download"
+        onClick={handleDownload}
+        title="Download as 1920×1080 wallpaper"
+        aria-label="Download as wallpaper"
+      >
         ↓
       </button>
       {showPrompt && anchorRef.current && (
@@ -394,6 +405,7 @@ export default function MeshGradientWidget({ instanceId }) {
 
 function PromptPopover({ anchor, value, onChange, onSubmit, onUseAutomatic, onCancel, loading, error }) {
   const rect = anchor.getBoundingClientRect()
+  const inputId = useId()
 
   const style = {
     position: 'fixed',
@@ -406,8 +418,9 @@ function PromptPopover({ anchor, value, onChange, onSubmit, onUseAutomatic, onCa
   return createPortal(
     <div className="drive-popover" style={style} onClick={(e) => e.stopPropagation()}>
       <form onSubmit={onSubmit}>
-        <label className="drive-popover-label">Describe a vibe</label>
+        <label className="drive-popover-label" htmlFor={inputId}>Describe a vibe</label>
         <input
+          id={inputId}
           className="drive-popover-input"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -416,7 +429,7 @@ function PromptPopover({ anchor, value, onChange, onSubmit, onUseAutomatic, onCa
           autoFocus
           disabled={loading}
         />
-        {error && <p className="gradient-ai-error">{error}</p>}
+        {error && <p className="gradient-ai-error" role="alert">{error}</p>}
         <div className="drive-popover-actions" style={{ justifyContent: onUseAutomatic ? 'space-between' : 'flex-end' }}>
           {onUseAutomatic && (
             <button type="button" className="gradient-ai-reset" onClick={onUseAutomatic} disabled={loading}>
